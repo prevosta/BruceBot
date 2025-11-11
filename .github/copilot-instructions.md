@@ -42,7 +42,7 @@ See `ares-sc2/src/ares/managers/manager_mediator.py` for the full API.
 
 ### Creating Custom Behaviors
 
-Behaviors go in `behaviors/` and inherit from protocol classes:
+Behaviors go in `bot/behaviors/` and inherit from protocol classes:
 - `CombatIndividualBehavior` - Single unit combat logic
 - `CombatGroupBehavior` - Multi-unit combat coordination  
 - `MacroBehavior` - Economy/production logic
@@ -106,9 +106,10 @@ The BuildOrderRunner automatically handles worker assignment, structure placemen
 
 ```
 bot/main.py              # BruceBot implementation (your main bot logic)
-behaviors/               # Custom behaviors organized by combat/macro
-  ├── combat/group/      # Multi-unit combat behaviors (BattleCruiser.py)
-  └── macro/group/       # Production behaviors (ProxyBuilder.py, DropMule.py)
+bot/
+  └── behaviors/         # Custom behaviors organized by combat/macro
+      ├── combat/group/  # Multi-unit combat behaviors (BattleCruiser.py)
+      └── macro/group/   # Production behaviors (ProxyBuilder.py, DropMule.py)
 config.yml               # Main configuration (race, debug, features)
 terran_builds.yml        # Build order definitions
 run.py                   # Local testing entry point
@@ -203,13 +204,14 @@ Custom placement functions in `bot/main.py`:
 - **Avoid over-engineering** - Prefer straightforward solutions over complex abstractions
 
 ### Development Tracking
+- **copilot-plan.md** - Strategic roadmap with prioritized features (Hidden Proxy, BC Controller, Repair Controller, Defense, Army composition)
 - **copilot-devlog.md** - Maintain a log of changes you make. Document what changed, why, and any important decisions
 - **copilot-task.md** - Use this to plan, track, and remember your current work. Update it as you progress through tasks
 
 Example devlog entry:
 ```markdown
 ## 2024-01-15 - Added BattleCruiser Yamato Cannon behavior
-- Modified: behaviors/combat/group/BattleCruiser.py
+- Modified: bot/behaviors/combat/group/BattleCruiser.py
 - Added logic to prioritize anti-air units with Yamato Cannon
 - Changed target selection to prefer high-value units (Vikings, Medivacs)
 ```
