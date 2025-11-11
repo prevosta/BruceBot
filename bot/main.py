@@ -12,8 +12,8 @@ from ares.consts import TOWNHALL_TYPES, WORKER_TYPES
 from ares.behaviors.macro.mining import Mining
 from ares.behaviors.macro.auto_supply import AutoSupply
 
-from behaviors.combat.group.BattleCruiser import BattleCruiser
-from behaviors.macro.group import ControlSupplyDepot, DropMule, ProxyBuilder
+from bot.behaviors.combat.group.BattleCruiser import BattleCruiser
+from bot.behaviors.macro.group import ControlSupplyDepot, DropMule, ProxyBuilder
 
 
 class BruceBot(AresBot):
