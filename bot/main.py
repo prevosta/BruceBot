@@ -26,6 +26,10 @@ class BruceBot(AresBot):
     async def on_step(self, iteration: int) -> None:
         await super(BruceBot, self).on_step(iteration)
 
+        # Greetings
+        if iteration == 25:
+            await self.client.chat_send(f"BruceBot v0.0.0 online. Good luck, have fun!", False)
+
         # Initialize defence positions
         if iteration == 10:
             self.tank_positions = [Point2((self.main_base_ramp.top_center.towards(self.start_location, 10)))]
