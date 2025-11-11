@@ -3,31 +3,28 @@ from typing import Optional
 from cython_extensions import cy_distance_to_squared
 
 from sc2.position import Point2
-from sc2.position import Point3
 from sc2.ids.unit_typeid import UnitTypeId
 from sc2.ids.ability_id import AbilityId
 from sc2.unit import Unit
 
 from ares import AresBot
+from ares.consts import TOWNHALL_TYPES, WORKER_TYPES
 from ares.behaviors.macro.mining import Mining
 
 from behaviors.combat.group.BattleCruiser import BattleCruiser
 from behaviors.macro.group import ControlSupplyDepot, DropMule, ProxyBuilder
 
 
-class MyBot(AresBot):
+class BruceBot(AresBot):
     def __init__(self, game_step_override: Optional[int] = None):
         super().__init__(game_step_override)
 
     async def on_start(self) -> None:
-        await super(MyBot, self).on_start()
+        await super(BruceBot, self).on_start()
         remove_illegal_positions(self)
 
     async def on_step(self, iteration: int) -> None:
-        await super(MyBot, self).on_step(iteration)
-
-        for loc, dist in self.mediator.get_enemy_expansions:
-            show_placements(self, loc)
+        await super(BruceBot, self).on_step(iteration)
 
         # Initialize defence positions
         if iteration == 10:
@@ -36,42 +33,50 @@ class MyBot(AresBot):
             if climber_ingress := compute_climber_ingress(self):
                 self.picket_positions.extend(climber_ingress)
 
-        if iteration > 10:
-            for p in self.picket_positions:
-                z = self.get_terrain_z_height(p)
-                self.client.debug_sphere_out(Point3((p.x, p.y, z + 0.2)), 0.3, color=(0, 0, 255))
-
         self.register_behavior(Mining())
         self.register_behavior(DropMule())
         self.register_behavior(ControlSupplyDepot())
         self.register_behavior(ProxyBuilder())
         self.register_behavior(BattleCruiser(priority={UnitTypeId.VIKINGFIGHTER, UnitTypeId.MEDIVAC}))
 
-        # Defence positions
-        for unit in self.units({UnitTypeId.MARINE, UnitTypeId.SIEGETANK, UnitTypeId.BATTLECRUISER}):
-            if unit.type_id == UnitTypeId.MARINE:
-                if cy_distance_to_squared(unit.position, self.picket_positions[-1]) > 2**2:
-                    unit.move(self.picket_positions[-1])
-            elif unit.type_id == UnitTypeId.SIEGETANK:
-                if cy_distance_to_squared(unit.position, self.tank_positions[0]) > 1**2:
-                    unit.move(self.tank_positions[0])
-                else:
-                    unit(AbilityId.SIEGEMODE_SIEGEMODE)
-            elif unit.type_id == UnitTypeId.BATTLECRUISER:
-                p1 = Point2(self.enemy_start_locations[0].towards(self.mediator.get_enemy_ramp.top_center, 2))
-                p2 = Point2(self.mediator.get_enemy_nat.towards(self.game_info.map_center, 2))
+        # Seek and destroy
+        if self.time > 6.5 * 60 and not self.enemy_structures(TOWNHALL_TYPES).exists:
+            for unit in self.units.filter(lambda u: u.type_id not in WORKER_TYPES):
+                if enemy_units := self.enemy_units | self.enemy_structures:
+                    unit.attack(enemy_units.closest_to(unit))
 
-                if unit.orders and cy_distance_to_squared(unit.orders[0].target, p1) < 1:
-                    if cy_distance_to_squared(unit.position, p1) < 2**2:
-                        unit.move(p2)
-                elif unit.orders and cy_distance_to_squared(unit.orders[0].target, p2) < 1:
-                    if cy_distance_to_squared(unit.position, p2) < 2**2:
+                elif not unit.is_moving:
+                    from random import uniform
+                    unit.move(Point2((uniform(0, self.game_info.map_size.x), uniform(0, self.game_info.map_size.y))))
+
+        # Defence positions
+        else:
+            for unit in self.units({UnitTypeId.MARINE, UnitTypeId.SIEGETANK, UnitTypeId.BATTLECRUISER}):
+                if unit.type_id == UnitTypeId.MARINE:
+                    if cy_distance_to_squared(unit.position, self.picket_positions[-1]) > 2**2:
+                        unit.move(self.picket_positions[-1])
+
+                elif unit.type_id == UnitTypeId.SIEGETANK:
+                    if cy_distance_to_squared(unit.position, self.tank_positions[0]) > 2**2:
+                        unit.move(self.tank_positions[0])
+                    else:
+                        unit(AbilityId.SIEGEMODE_SIEGEMODE)
+
+                elif unit.type_id == UnitTypeId.BATTLECRUISER:
+                    p1 = Point2(self.enemy_start_locations[0].towards(self.mediator.get_enemy_ramp.top_center, 1))
+                    p2 = Point2(self.mediator.get_enemy_nat.towards(self.game_info.map_center, 1))
+
+                    if unit.orders and isinstance(unit.orders[0].target, Point2) and cy_distance_to_squared(unit.orders[0].target, p1) < 1:
+                        if cy_distance_to_squared(unit.position, p1) < 1**2:
+                            unit.move(p2)
+                    elif unit.orders and isinstance(unit.orders[0].target, Point2) and cy_distance_to_squared(unit.orders[0].target, p2) < 1:
+                        if cy_distance_to_squared(unit.position, p2) < 1**2:
+                            unit.move(p1)
+                    else:
                         unit.move(p1)
-                else:
-                    unit.move(p1)
 
         # Production
-        if self.structures(UnitTypeId.STARPORT).exists:
+        if self.units(UnitTypeId.BATTLECRUISER).exists or self.unit_pending(UnitTypeId.BATTLECRUISER):
             # if (self.minerals - self.vespene) > 200:
             #     BuildStructure(self.start_location, UnitTypeId.BARRACKS).execute(self, self.config, self.mediator)
             for structure in self.structures(UnitTypeId.BARRACKS):
@@ -80,6 +85,10 @@ class MyBot(AresBot):
             for structure in self.structures(UnitTypeId.STARPORT):
                 if structure.is_idle and self.can_afford(UnitTypeId.BATTLECRUISER):
                     structure.train(UnitTypeId.BATTLECRUISER)
+            n_workers = self.townhalls.amount * 22
+            for townhall in self.townhalls:
+                if townhall.is_idle and self.can_afford(UnitTypeId.SCV) and self.workers.amount < n_workers:
+                    townhall.train(UnitTypeId.SCV)
 
     async def on_unit_created(self, unit: Unit) -> None:
         await super().on_unit_created(unit)

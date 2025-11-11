@@ -26,7 +26,6 @@ class ProxyBuilder(CombatGroupBehavior):
             where = ai.build_order_runner._get_target(where.upper().strip())
             if iteration == ai.actual_iteration:
                 if worker := mediator.select_worker(target_position=where):
-                    print(f"{ai.time_formatted} {ai.actual_iteration} {worker.tag} {where}")
                     mediator.clear_role(tag=worker.tag)
                     mediator.assign_role(tag=worker.tag, role=UnitRole.PROXY_WORKER)
                     mediator.remove_worker_from_mineral(worker_tag=worker.tag)
@@ -35,10 +34,9 @@ class ProxyBuilder(CombatGroupBehavior):
                     return True
 
         for worker in mediator.get_units_from_role(role=UnitRole.PROXY_WORKER):
-            if worker.is_moving and worker.orders and cy_distance_to_squared(worker.position, worker.orders[0].target) < 15**2:
+            if worker.is_moving and worker.orders and cy_distance_to_squared(worker.position, worker.orders[0].target) < 25**2:
                 mediator.clear_role(tag=worker.tag)
                 mediator.assign_role(tag=worker.tag, role=UnitRole.PERSISTENT_BUILDER)
-                print(f"{ai.time_formatted} {ai.actual_iteration} {worker.tag} PERSISTENT_BUILDER")
 
         for worker in mediator.get_units_from_role(role=UnitRole.PERSISTENT_BUILDER).filter(lambda w: w.is_constructing_scv):
             mediator.clear_role(tag=worker.tag)

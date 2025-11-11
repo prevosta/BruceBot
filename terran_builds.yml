@@ -5,30 +5,30 @@ BuildChoices:
     # test_123 is active if Debug: True (set via a `config.yml` file)
     test_123:
         BotName: Test
-        Cycle: [TankBcOpening]
+        Cycle: [BcPush]
 
     Random:
         BotName: RandomRace
-        Cycle: [TankBcOpening]
+        Cycle: [BcPush]
 
     Protoss:
         BotName: ProtossRace
-        Cycle: [TankBcOpening]
+        Cycle: [BcPush]
 
     Terran:
         BotName: TerranRace
-        Cycle: [TankBcOpening]
+        Cycle: [BcPush]
 
     Zerg:
         BotName: ZergRace
-        Cycle: [TankBcOpening]
+        Cycle: [BcPush]
 
 Builds:
-    TankBcOpening:
+    BcPush:
         AutoSupplyAtSupply: 40
         PersistentWorker: False
         ProxyBuilder:
-        - 1150 ENEMY_FOURTH STARPORT
+        - 1100 ENEMY_FOURTH STARPORT
         OpeningBuildOrder:
         - 0 SUPPLYDEPOT @ RAMP
         - 0 SCV
@@ -64,11 +64,23 @@ Builds:
         - 0 SCV
         - 0 BATTLECRUISER
 
-        - 0 EXPAND
-        - 0 STARPORT
-        - 0 REFINERY
-        - 0 REFINERY
-        - 0 STARPORTTECHLAB
+        - 0 EXPAND @ NATURAL
+        - 0 STARPORT @ NATURAL
+        - 0 REFINERY @ NATURAL
+        - 0 REFINERY @ NATURAL
+        - 0 STARPORTTECHLAB @ NATURAL
+
+        # - 0 EXPAND @ THIRD
+        # - 0 STARPORT @ THIRD
+        # - 0 REFINERY @ THIRD
+        # - 0 REFINERY @ THIRD
+        # - 0 STARPORTTECHLAB @ THIRD
+
+        # - 0 EXPAND @ FOURTH
+        # - 0 STARPORT @ FOURTH
+        # - 0 REFINERY @ FOURTH
+        # - 0 REFINERY @ FOURTH
+        # - 0 STARPORTTECHLAB @ FOURTH
 
         ArmyComposition:
         - BATTLECRUISER 14
