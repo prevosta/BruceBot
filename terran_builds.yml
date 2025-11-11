@@ -1,0 +1,76 @@
+UseData: True
+BuildSelection: WinrateBased
+
+BuildChoices:
+    # test_123 is active if Debug: True (set via a `config.yml` file)
+    test_123:
+        BotName: Test
+        Cycle: [TankBcOpening]
+
+    Random:
+        BotName: RandomRace
+        Cycle: [TankBcOpening]
+
+    Protoss:
+        BotName: ProtossRace
+        Cycle: [TankBcOpening]
+
+    Terran:
+        BotName: TerranRace
+        Cycle: [TankBcOpening]
+
+    Zerg:
+        BotName: ZergRace
+        Cycle: [TankBcOpening]
+
+Builds:
+    TankBcOpening:
+        AutoSupplyAtSupply: 40
+        PersistentWorker: False
+        ProxyBuilder:
+        - 1150 ENEMY_FOURTH STARPORT
+        OpeningBuildOrder:
+        - 0 SUPPLYDEPOT @ RAMP
+        - 0 SCV
+        - 0 SCV
+        - 0 BARRACKS @ RAMP
+        - 0 REFINERY
+        - 0 SCV
+        - 0 REFINERY
+        - 0 SCV
+        - 0 SCV
+        - 0 ORBITAL
+        - 0 MARINE
+        - 0 FACTORY
+        - 0 SUPPLYDEPOT @ RAMP
+        - 0 SCV
+        - 0 BARRACKSREACTOR
+        - 0 SCV
+        - 0 SCV
+        - 0 ARMORY
+        - 0 FACTORYTECHLAB
+        - 0 STARPORT @ ENEMY_FOURTH
+        - 0 SIEGETANK
+        - 0 SCV
+        - 0 MARINE x2
+        - 0 SCV
+        - 0 SUPPLYDEPOT
+        - 0 FUSIONCORE
+        - 0 SUPPLYDEPOT
+        - 0 STARPORTTECHLAB
+        - 0 SCV
+        - 0 MARINE x2
+        - 0 SUPPLYDEPOT
+        - 0 SCV
+        - 0 BATTLECRUISER
+
+        - 0 EXPAND
+        - 0 STARPORT
+        - 0 REFINERY
+        - 0 REFINERY
+        - 0 STARPORTTECHLAB
+
+        ArmyComposition:
+        - BATTLECRUISER 14
+        - MARINE 50
+        - SIEGETANK 4
