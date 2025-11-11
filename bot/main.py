@@ -10,6 +10,7 @@ from sc2.unit import Unit
 from ares import AresBot
 from ares.consts import TOWNHALL_TYPES, WORKER_TYPES
 from ares.behaviors.macro.mining import Mining
+from ares.behaviors.macro.auto_supply import AutoSupply
 
 from behaviors.combat.group.BattleCruiser import BattleCruiser
 from behaviors.macro.group import ControlSupplyDepot, DropMule, ProxyBuilder
@@ -28,7 +29,7 @@ class BruceBot(AresBot):
 
         # Greetings
         if iteration == 25:
-            await self.client.chat_send(f"BruceBot v0.0.0 online. Good luck, have fun!", False)
+            await self.client.chat_send(f"BruceBot v0.0.1 online. Good luck, have fun!", False)
 
         # Initialize defence positions
         if iteration == 10:
@@ -42,6 +43,8 @@ class BruceBot(AresBot):
         self.register_behavior(ControlSupplyDepot())
         self.register_behavior(ProxyBuilder())
         self.register_behavior(BattleCruiser(priority={UnitTypeId.VIKINGFIGHTER, UnitTypeId.MEDIVAC}))
+        if self.supply_used >= 40:
+            self.register_behavior(AutoSupply(self.start_location))
 
         # Seek and destroy
         if self.time > 6.5 * 60 and not self.enemy_structures(TOWNHALL_TYPES).exists:

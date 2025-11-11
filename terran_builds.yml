@@ -25,7 +25,7 @@ BuildChoices:
 
 Builds:
     BcPush:
-        AutoSupplyAtSupply: 40
+        # AutoSupplyAtSupply: 40
         PersistentWorker: False
         ProxyBuilder:
         - 1100 ENEMY_FOURTH STARPORT
