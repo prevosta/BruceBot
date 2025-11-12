@@ -47,10 +47,10 @@ Builds:
         - 0 BARRACKSREACTOR
         - 0 SCV
         - 0 SCV
-        - 0 ARMORY
         - 0 FACTORYTECHLAB
-        - 0 STARPORT @ ENEMY_FOURTH
+        - 0 ARMORY
         - 0 SIEGETANK
+        - 0 STARPORT @ ENEMY_FOURTH
         - 0 SCV
         - 0 MARINE x2
         - 0 SCV
@@ -64,7 +64,12 @@ Builds:
         - 0 SCV
         - 0 BATTLECRUISER
 
+        - 0 ENGINEERINGBAY
+        - 0 MISSILETURRET
+        - 0 MISSILETURRET @ RAMP
+
         - 0 EXPAND @ NATURAL
+        - 0 MISSILETURRET @ NATURAL
         - 0 STARPORT @ NATURAL
         - 0 REFINERY @ NATURAL
         - 0 REFINERY @ NATURAL
@@ -85,4 +90,4 @@ Builds:
         ArmyComposition:
         - BATTLECRUISER 14
         - MARINE 50
-        - SIEGETANK 2
+        - SIEGETANK 3

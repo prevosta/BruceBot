@@ -37,3 +37,16 @@ def show_placements(ai: AresBot, location: Point2) -> None:
 
             color = (0, 255, 0) if attribut['available'] else (255, 0, 0)
             ai.client.debug_box_out(p1, p2, color=color)
+
+    # Add-on placements
+    for size_grp, positions in ai.mediator.get_placements_dict[location].items():
+        for position, attribut in positions.items():
+            if size_grp == BuildingSize.THREE_BY_THREE:
+                addon_position = Point2((position.x + 2.5, position.y - 0.5))
+
+                z = ai.get_terrain_z_height(position)
+                p1 = Point3((addon_position.x - 1, addon_position.y - 1, z + 0.1))
+                p2 = Point3((addon_position.x + 1, addon_position.y + 1, z + 0.1))
+
+                color = (255, 0, 0) if attribut['has_addon'] or not attribut['available'] else (0, 255, 0)
+                ai.client.debug_box_out(p1, p2, color=color)

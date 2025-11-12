@@ -8,20 +8,20 @@ from ares.consts import TOWNHALL_TYPES
 from ares.behaviors.macro.mining import Mining
 from ares.behaviors.macro.auto_supply import AutoSupply
 
+from bot.utils import remove_illegal_positions
 from bot.behaviors.combat.group.TankDefence import TankDefence
-from bot.behaviors.combat.group.PicketDefence import PicketDefence, generate_pickets
+from bot.behaviors.combat.group.PicketDefence import PicketDefence
 from bot.behaviors.combat.group.BattleCruiser import BattleCruiser
 from bot.behaviors.combat.group.SeekAndDestroy import SeekAndDestroy
-from bot.behaviors.combat.group.TankDefence import TankDefence, generate_tank_positions
+from bot.behaviors.combat.group.TankDefence import TankDefence
 from bot.behaviors.macro.group import ControlSupplyDepot, DropMule, ProxyBuilder
 from bot.behaviors.macro.group.ArmyComposition import ArmyComposition
 from bot.behaviors.macro.group.TrainWorker import TrainWorkers
-from bot.utils import remove_illegal_positions
 
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "0.1.0"
+    VERSION: str = "0.2.0"
     CODE_NAME: str = "FightRepairRepeat"
 
     def __init__(self, game_step_override: Optional[int] = None):
@@ -29,9 +29,11 @@ class BruceBot(AresBot):
 
     async def on_start(self) -> None:
         await super(BruceBot, self).on_start()
+        
+        self.picket_positions = PicketDefence.generate(self)
+        self.tank_positions = TankDefence.generate(self)
+
         remove_illegal_positions(self)
-        self.picket_positions = generate_pickets(self)
-        self.tank_positions = generate_tank_positions(self)
 
     async def on_step(self, iteration: int) -> None:
         await super(BruceBot, self).on_step(iteration)
