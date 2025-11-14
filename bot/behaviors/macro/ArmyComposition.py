@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from sc2.ids.unit_typeid import UnitTypeId
 
 from ares import AresBot
+from ares.behaviors.macro.build_structure import BuildStructure
 from ares.consts import BUILDS
 from ares.managers.manager_mediator import ManagerMediator
 from ares.behaviors.combat.group.combat_group_behavior import CombatGroupBehavior
@@ -45,6 +46,10 @@ class ArmyComposition(CombatGroupBehavior):
             unit_type, count = army_unit.split(" ")
             unit_type = UnitTypeId[unit_type.upper()]
             target_count = int(count)
+
+            # Too much money, build more production
+            if ai.minerals > 500 and ai.time > 6*60:
+                BuildStructure(ai.start_location, UnitTypeId.BARRACKS, max_on_route=2).execute(ai, {}, mediator)
 
             # Count current units and pending units
             unit_count = ai.units(MORPH_UNITS.get(unit_type, unit_type)).amount

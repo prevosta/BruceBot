@@ -5,13 +5,14 @@ from sc2.position import Point2
 from sc2.ids.unit_typeid import UnitTypeId
 
 from ares import AresBot
-from ares.consts import TOWNHALL_TYPES, WORKER_TYPES
+from ares.consts import WORKER_TYPES
 from ares.behaviors.macro.mining import Mining
 
+from bot.behaviors.combat import ArmyAttack
 from bot.behaviors.macro.RebuildAddons import ReBuildAddons
 from bot.behaviors.macro.RebuildDestroyStructure import RebuildDestroyStructure
 from bot.behaviors.macro.RepairControler import RepairController
-from bot.utils import add_placements, remove_illegal_positions, show_placements
+from bot.utils import add_placements, remove_illegal_positions
 from bot.behaviors.combat.TankDefence import TankDefence
 from bot.behaviors.combat.PicketDefence import PicketDefence
 from bot.behaviors.combat.BattleCruiser import BattleCruiser
@@ -24,7 +25,7 @@ from bot.behaviors.macro.TrainWorker import TrainWorker
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "1.0.0"
+    VERSION: str = "1.0.1"
     CODE_NAME: str = "FootLoose"
 
     def __init__(self, game_step_override: Optional[int] = None):
@@ -32,6 +33,8 @@ class BruceBot(AresBot):
 
     async def on_start(self) -> None:
         await super(BruceBot, self).on_start()
+
+        self.seek_and_destroy = False
         
         self.picket_positions = PicketDefence.generate(self)
         self.tank_positions = TankDefence.generate(self)
@@ -66,19 +69,20 @@ class BruceBot(AresBot):
         self.register_behavior(ReBuildAddons())
         self.register_behavior(AutoSupply(base_location=self.start_location))
 
-        # Seek and destroy
-        if (self.time > 6.5 * 60) and not self.enemy_structures(TOWNHALL_TYPES).exists:
-            if getattr(self, 'seek_and_destroy_activated', False):
-                setattr(self, 'seek_and_destroy_activated', True)
-                await self.client.chat_send(f"{self.time_formatted} {iteration} Searching, seek and destroy.", False)
-
-            self.register_behavior(SeekAndDestroy())
-
         # Main actions
-        else:
+        if ArmyAttack({UnitTypeId.BATTLECRUISER}).execute(self, self.config, self.mediator):
             self.register_behavior(PicketDefence(pickets=self.picket_positions))
             self.register_behavior(TankDefence(tank_positions=self.tank_positions))
             self.register_behavior(BattleCruiser(priority=WORKER_TYPES))
+            self.seek_and_destroy = False
+
+        # Searching, seek and destroy
+        else:
+            self.register_behavior(SeekAndDestroy())
+
+            if not self.seek_and_destroy:
+                self.seek_and_destroy = True
+                await self.client.chat_send(f"{iteration} {self.time_formatted} Seeking, seek and destroy.", False)
 
         # Production
         if self.units(UnitTypeId.BATTLECRUISER).exists or self.unit_pending(UnitTypeId.BATTLECRUISER):

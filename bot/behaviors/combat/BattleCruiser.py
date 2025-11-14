@@ -7,6 +7,7 @@ from sc2.ids.unit_typeid import UnitTypeId
 from sc2.ids.ability_id import AbilityId
 
 from ares import AresBot
+from ares.consts import TOWNHALL_TYPES
 from ares.managers.manager_mediator import ManagerMediator
 from ares.behaviors.combat.group import CombatGroupBehavior
 from ares.behaviors.combat.individual.keep_unit_safe import KeepUnitSafe
@@ -73,20 +74,5 @@ class BattleCruiser(CombatGroupBehavior):
             elif enemy_at_the_gate.amount > 2 and cy_distance_to_squared(unit.position, ai.main_base_ramp.top_center) <= 30**2:
                 target = Point2(ai.main_base_ramp.top_center.towards(ai.start_location, 5))
                 PathUnitToTarget(unit, mediator.get_air_grid, target).execute(ai, config, mediator)
-
-            # Patrol logic
-            else:
-                p1 = Point2(ai.enemy_start_locations[0].towards(mediator.get_enemy_ramp.top_center, -2))
-                p2 = Point2(mediator.get_enemy_nat.towards(ai.game_info.map_center, -2))
-
-                if int(ai.time / 60) % 2 == 0:
-                    PathUnitToTarget(unit, mediator.get_air_grid, p1).execute(ai, config, mediator)
-                    order_issue = True
-                    continue
-
-                else:
-                    PathUnitToTarget(unit, mediator.get_air_grid, p2).execute(ai, config, mediator)
-                    order_issue = True
-                    continue
 
         return order_issue
