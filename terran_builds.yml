@@ -2,11 +2,6 @@ UseData: True
 BuildSelection: WinrateBased
 
 BuildChoices:
-    # test_123 is active if Debug: True (set via a `config.yml` file)
-    test_123:
-        BotName: Test
-        Cycle: [BcPush]
-
     Random:
         BotName: RandomRace
         Cycle: [BcPush]
@@ -25,11 +20,12 @@ BuildChoices:
 
 Builds:
     BcPush:
-        # AutoSupplyAtSupply: 40
+        AutoSupplyAtSupply: 40
         PersistentWorker: False
         ProxyBuilder:
-        - 1100 ENEMY_FOURTH STARPORT
+        - 1200 ENEMY_FOURTH STARPORT
         OpeningBuildOrder:
+        # Fast wall
         - 0 SUPPLYDEPOT @ RAMP
         - 0 SCV
         - 0 SCV
@@ -41,6 +37,7 @@ Builds:
         - 0 SCV
         - 0 ORBITAL
         - 0 MARINE
+        # Fast Tank
         - 0 FACTORY
         - 0 SUPPLYDEPOT @ RAMP
         - 0 SCV
@@ -50,6 +47,7 @@ Builds:
         - 0 FACTORYTECHLAB
         - 0 ARMORY
         - 0 SIEGETANK
+        # Fast BC
         - 0 STARPORT @ ENEMY_FOURTH
         - 0 SCV
         - 0 MARINE x2
@@ -63,31 +61,21 @@ Builds:
         - 0 SUPPLYDEPOT
         - 0 SCV
         - 0 BATTLECRUISER
-
+        # Air defense
         - 0 ENGINEERINGBAY
         - 0 MISSILETURRET
         - 0 MISSILETURRET @ RAMP
-
+        # Expand
         - 0 EXPAND @ NATURAL
-        - 0 MISSILETURRET @ NATURAL
         - 0 STARPORT @ NATURAL
         - 0 REFINERY @ NATURAL
         - 0 REFINERY @ NATURAL
         - 0 STARPORTTECHLAB @ NATURAL
-
-        # - 0 EXPAND @ THIRD
-        # - 0 STARPORT @ THIRD
-        # - 0 REFINERY @ THIRD
-        # - 0 REFINERY @ THIRD
-        # - 0 STARPORTTECHLAB @ THIRD
-
-        # - 0 EXPAND @ FOURTH
-        # - 0 STARPORT @ FOURTH
-        # - 0 REFINERY @ FOURTH
-        # - 0 REFINERY @ FOURTH
-        # - 0 STARPORTTECHLAB @ FOURTH
-
         ArmyComposition:
         - BATTLECRUISER 14
         - MARINE 50
         - SIEGETANK 3
+        TechUpgrades:
+        - YAMATOCANNON
+        - SHIPWEAPONS1
+        - SHIPARMOR1

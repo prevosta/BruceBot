@@ -8,7 +8,7 @@ from ares.behaviors.combat.group import CombatGroupBehavior
 
 
 @dataclass
-class TrainWorkers(CombatGroupBehavior):
+class TrainWorker(CombatGroupBehavior):
     """Manages worker training at all townhalls."""
 
     n_per_townhall: int = 22

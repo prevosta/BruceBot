@@ -20,6 +20,11 @@ class TankDefence(CombatGroupBehavior):
 
     def execute(self, ai: AresBot, config: dict, mediator) -> bool:
 
+        # Unsiege tanks if enemies are too close
+        for tank in ai.units(UnitTypeId.SIEGETANKSIEGED):
+            if ai.enemy_units.filter(lambda u: cy_distance_to_squared(u.position, tank.position) <= 3**2).exists:
+                tank(AbilityId.SIEGEBREAKERSIEGE_SIEGEMODE)
+
         # Get all unsieged tank units
         combat_units = ai.units(UnitTypeId.SIEGETANK)
         
@@ -38,7 +43,7 @@ class TankDefence(CombatGroupBehavior):
                 unit.move(sorted_pos[0])
 
             # Siege on arival
-            else:
+            elif not ai.enemy_units.filter(lambda u: cy_distance_to_squared(u.position, unit.position) <= 3**2).exists:
                 unit(AbilityId.SIEGEMODE_SIEGEMODE)
 
         return True

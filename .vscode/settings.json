@@ -1,5 +1,8 @@
 {
     "python.analysis.extraPaths": [
         "./ares-sc2/src"
-    ]
+    ],
+    "files.exclude": {
+        "**/__pycache__": true
+    }
 }

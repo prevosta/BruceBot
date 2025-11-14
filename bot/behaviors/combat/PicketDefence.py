@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 
-from cython_extensions import cy_distance_to_squared
+from cython_extensions import cy_distance_to_squared, cy_attack_ready
 
+from sc2.data import Race
 from sc2.position import Point2
 from sc2.ids.unit_typeid import UnitTypeId
 
 from ares import AresBot
 from ares.behaviors.combat.group import CombatGroupBehavior
+from ares.behaviors.combat.individual.keep_unit_safe import KeepUnitSafe
 
 
 @dataclass
@@ -26,7 +28,7 @@ class PicketDefence(CombatGroupBehavior):
         
         if not combat_units.exists:
             return False
-        
+
         # Compute next best position (least occupied, then by order defined)
         pos_cnt = {pos: sum(1 for unit in combat_units if cy_distance_to_squared(unit.position, pos) <= 1**2) for pos in self.pickets}
         pos_inx = {pos: idx for idx, pos in enumerate(self.pickets)}
@@ -44,6 +46,24 @@ class PicketDefence(CombatGroupBehavior):
                         free_units.append(unit)
                         break
 
+        for unit in combat_units:
+            enemy_nearby = ai.enemy_units.filter(lambda e: cy_distance_to_squared(e.position, unit.position) <= max(e.ground_range + 1, unit.ground_range + 1)**2)
+            
+            if not enemy_nearby.exists:
+                continue
+
+            target = enemy_nearby.closest_to(unit)
+
+            if cy_attack_ready(ai, unit, target):
+                if unit in free_units:
+                    free_units.remove(unit)
+                unit.attack(target)
+
+            elif cy_distance_to_squared(target.position, unit.position) <= (target.ground_range + 1)**2:
+                KeepUnitSafe(unit, mediator.get_ground_grid).execute(ai, config, mediator)
+                if unit in free_units:
+                    free_units.remove(unit)
+
         for unit in free_units:
             # Proceed to least occupied position
             if cy_distance_to_squared(sorted_pos[0], unit.position) >= 3**2:
@@ -54,6 +74,11 @@ class PicketDefence(CombatGroupBehavior):
     @staticmethod
     def generate(ai: AresBot) -> list[Point2]:
         """Generate picket positions around the main base ramp and climber ingress points."""
+
+        if ai.enemy_race in [Race.Zerg, Race.Protoss]:
+            corner_depots = list(ai.main_base_ramp.corner_depots)
+            corner_depot = sorted(corner_depots, key=lambda d: cy_distance_to_squared(d.position, ai.start_location))[0]
+            return [Point2(corner_depot.position.towards(ai.start_location, 4))]
 
         region = ai.mediator.get_map_data_object.where(ai.start_location)
 
@@ -116,7 +141,7 @@ class PicketDefence(CombatGroupBehavior):
         ingress_points = [p for p in ingress_points if cy_distance_to_squared(p, ai.main_base_ramp.top_center) > 4**2]
         corner_depots = list(ai.main_base_ramp.corner_depots)
         corner_depot = sorted(corner_depots, key=lambda d: cy_distance_to_squared(d.position, ai.start_location))[0]
-        ingress_points.append(Point2(corner_depot.position.towards(ai.start_location, 2)))
+        ingress_points.append(Point2(corner_depot.position.towards(ai.start_location, 4)))
 
         # Merge close ingress points (within 2 units) averaging their positions
         merged = []
