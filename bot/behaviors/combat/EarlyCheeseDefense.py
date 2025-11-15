@@ -14,7 +14,7 @@ from ares.behaviors.combat.group import CombatGroupBehavior
 class EarlyCheeseDefense(CombatGroupBehavior):
     """Behavior to defend against early cheese attacks."""
 
-    timeout: int = 3 * 60  # 3 minutes
+    timeout: int = int(2.25 * 60)  # 2.25 minutes
     crew_size: int = 3
     cap_size: int = 9
 

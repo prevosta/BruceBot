@@ -17,8 +17,8 @@ from bot.behaviors.combat import SeekAndDestroy, TankDefence, ArmyAttack
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "1.1.0"
-    CODE_NAME: str = "CheeseNoMore"
+    VERSION: str = "1.2.0"
+    CODE_NAME: str = "HellFromAbove"
 
     def __init__(self, game_step_override: Optional[int] = None):
         super().__init__(game_step_override)
@@ -49,6 +49,20 @@ class BruceBot(AresBot):
             if self.main_base_ramp.barracks_correct_placement:
                 near = [self.main_base_ramp.barracks_correct_placement + Point2((2.5, -0.5)), self.start_location]
                 add_placements(self, UnitTypeId.MISSILETURRET, self.start_location, near, radius=8)
+
+        # Cheeze testing
+        # if iteration == int(.5 * 60 * 11.2):
+        #     await self.client.debug_create_unit([[UnitTypeId.PYLON, 1, self.main_base_ramp.bottom_center, 2]])
+        # if iteration == int(1.75 * 60 * 11.2):
+        #     await self.client.debug_create_unit([[UnitTypeId.ZERGLING, 12, self.main_base_ramp.bottom_center, 2]])
+        # if iteration == int(4.25 * 60 * 11.2):
+        #     await self.client.debug_create_unit([[UnitTypeId.VOIDRAY, 1, self.start_location, 2]])
+
+        # await self.client.debug_upgrade()
+        # await self.client.debug_create_unit([[UnitTypeId.BATTLECRUISER, 1, self.mediator.get_enemy_nat, 1]])
+        # await self.client.debug_create_unit([[UnitTypeId.BATTLECRUISER, 1, self.mediator.get_enemy_third, 1]])
+        # await self.client.debug_create_unit([[UnitTypeId.BATTLECRUISER, 1, self.mediator.get_enemy_fourth, 1]])
+        # await self.client.debug_create_unit([[UnitTypeId.MISSILETURRET, 1, self.enemy_start_locations[0], 2]])
 
         # Behaviors
         self.register_behavior(Mining())

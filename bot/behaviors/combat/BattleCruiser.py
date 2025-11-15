@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from cython_extensions import cy_distance_to_squared
 
+from sc2.unit import Unit
 from sc2.position import Point2
 from sc2.ids.unit_typeid import UnitTypeId
 from sc2.ids.ability_id import AbilityId
@@ -26,8 +27,9 @@ class BattleCruiser(CombatGroupBehavior):
         # Tatical Emergency Recall for defense
 
         order_issue = False
+        fleet = ai.units(UnitTypeId.BATTLECRUISER)
 
-        for unit in ai.units(UnitTypeId.BATTLECRUISER):
+        for unit in fleet:
             # Support logic
             region = mediator.get_map_data_object.where(ai.start_location)
             enemy_at_the_gate = ai.enemy_units.filter(lambda e: e.is_visible and cy_distance_to_squared(e.position, ai.main_base_ramp.bottom_center) < 10**2)
@@ -52,10 +54,26 @@ class BattleCruiser(CombatGroupBehavior):
                     order_issue = True
                     continue
 
+            # Yamato Cannon logic
+            if AbilityId.YAMATO_YAMATOGUN in unit.abilities:
+                yamato_targets = ai.enemy_units(self.high_threats) | ai.enemy_structures(self.high_threats)
+                yamato_targets = yamato_targets.filter(lambda e: e.is_visible and cy_distance_to_squared(e.position, unit.position) < (unit.sight_range + 2)**2)
+
+                if yamato_targets.exists:
+                    def yamato_priority(e):
+                        # Prioritize targets (Structure > CanAttackAir > Health+Shield)
+                        return e.is_structure, e.can_attack_air, e.health + e.shield
+
+                    target = yamato_targets.sorted(key=yamato_priority).first
+                    unit(AbilityId.YAMATO_YAMATOGUN, target)
+                    order_issue = True
+                    continue
+
             # Attack logic
             targets = ai.enemy_units.filter(lambda e: e.can_attack_air and cy_distance_to_squared(e.position, unit.position) < (e.air_range + 2)**2)
             if self.high_threats:
                 targets |= ai.enemy_units(self.high_threats) | ai.enemy_structures(self.high_threats)
+            targets = targets.filter(lambda e: e.is_visible)
 
             if not targets.exists and self.priorities:
                 targets = ai.enemy_structures(self.priorities) | ai.enemy_units(self.priorities)
@@ -71,7 +89,11 @@ class BattleCruiser(CombatGroupBehavior):
                     continue
 
                 elif cy_distance_to_squared(unit.position, closest_enemy.position) > (unit.ground_range -2) ** 2:
-                    PathUnitToTarget(unit, mediator.get_air_grid, closest_enemy.position).execute(ai, config, mediator)
+                    leader: Unit = fleet.filter(lambda x: cy_distance_to_squared(x.position, unit.position) < 25**2).sorted(lambda x: x.tag)[0]
+                    if unit.tag == leader.tag:
+                        PathUnitToTarget(unit, mediator.get_air_grid, closest_enemy.position).execute(ai, config, mediator)
+                    else:
+                        PathUnitToTarget(unit, mediator.get_air_grid, leader.position).execute(ai, config, mediator)
 
             # Defense logic
             elif enemy_at_the_gate.amount > 2 and cy_distance_to_squared(unit.position, ai.main_base_ramp.top_center) <= 30**2:
