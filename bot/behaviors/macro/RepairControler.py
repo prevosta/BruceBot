@@ -3,6 +3,7 @@ from typing import Dict, List
 from cython_extensions import cy_distance_to_squared
 
 from sc2.units import Units
+from sc2.ids.unit_typeid import UnitTypeId
 
 from ares import AresBot
 from ares.consts import WORKER_TYPES, UnitRole
@@ -27,7 +28,7 @@ class RepairController(CombatGroupBehavior):
         damaged_units: Units = ai.structures.filter(lambda u: u.health_percentage < 1.0 and u.build_progress >= 1.0)
 
         if self.repair_unit:
-            damaged_units |= ai.units.filter(lambda u: u.health_percentage < 1.0)
+            damaged_units |= ai.units.filter(lambda u: u.health_percentage < 1.0 and u.type_id not in WORKER_TYPES | {UnitTypeId.MULE})
 
         if self.repair_worker:
             damaged_units |= ai.units.filter(lambda u: u.health_percentage < 1.0 and u.type_id in WORKER_TYPES)

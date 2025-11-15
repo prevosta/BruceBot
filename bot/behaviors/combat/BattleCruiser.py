@@ -17,8 +17,8 @@ from ares.behaviors.combat.individual.path_unit_to_target import PathUnitToTarge
 class BattleCruiser(CombatGroupBehavior):
     """Manages BattleCruisers in combat."""
 
-    high_threat: set[UnitTypeId] | None = None # Yamato Cannon priority
-    priority: set[UnitTypeId] | None = None # Battery Cannon priority
+    high_threats: set[UnitTypeId] | None = None # Yamato Cannon priority
+    priorities: set[UnitTypeId] | None = None # Battery Cannon priority
 
     def execute(self, ai: AresBot, config: dict, mediator: ManagerMediator) -> bool:
         # Yamato Cannon (Static Air Defense, Air2Air unit)
@@ -42,6 +42,7 @@ class BattleCruiser(CombatGroupBehavior):
                 base_location = Point2(ai.townhalls.closest_to(ai.start_location).position.towards(ai.game_info.map_center, -3))
 
                 if cy_distance_to_squared(unit.position, base_location) < 10**2:
+                    unit.stop()
                     order_issue = True
                     continue
 
@@ -53,9 +54,11 @@ class BattleCruiser(CombatGroupBehavior):
 
             # Attack logic
             targets = ai.enemy_units.filter(lambda e: e.can_attack_air and cy_distance_to_squared(e.position, unit.position) < (e.air_range + 2)**2)
+            if self.high_threats:
+                targets |= ai.enemy_units(self.high_threats) | ai.enemy_structures(self.high_threats)
 
-            if not targets.exists and self.priority:
-                targets = ai.enemy_structures(self.priority) | ai.enemy_units(self.priority)
+            if not targets.exists and self.priorities:
+                targets = ai.enemy_structures(self.priorities) | ai.enemy_units(self.priorities)
                 targets = targets.filter(lambda e: cy_distance_to_squared(e.position, unit.position) < 15**2 and e.is_visible)
 
             if targets.exists:

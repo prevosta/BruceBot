@@ -8,25 +8,17 @@ from ares import AresBot
 from ares.consts import WORKER_TYPES
 from ares.behaviors.macro.mining import Mining
 
-from bot.behaviors.combat import ArmyAttack
-from bot.behaviors.macro.RebuildAddons import ReBuildAddons
-from bot.behaviors.macro.RebuildDestroyStructure import RebuildDestroyStructure
-from bot.behaviors.macro.RepairControler import RepairController
 from bot.utils import add_placements, remove_illegal_positions
-from bot.behaviors.combat.TankDefence import TankDefence
-from bot.behaviors.combat.PicketDefence import PicketDefence
-from bot.behaviors.combat.BattleCruiser import BattleCruiser
-from bot.behaviors.combat.SeekAndDestroy import SeekAndDestroy
-from bot.behaviors.combat.TankDefence import TankDefence
-from bot.behaviors.macro import AutoSupply, ControlSupplyDepot, DropMule, ProxyBuilder, UpgradeTech
-from bot.behaviors.macro.ArmyComposition import ArmyComposition
-from bot.behaviors.macro.TrainWorker import TrainWorker
-
+from bot.behaviors.macro import ReBuildAddons, RebuildDestroyStructure, RepairController
+from bot.behaviors.macro import AutoSupply, ControlSupplyDepot, DropMule, EarlyCheeseDefense
+from bot.behaviors.macro import ArmyComposition, UpgradeTech, TrainWorker, ProxyBuilder
+from bot.behaviors.combat import TankDefence, PicketDefence, BattleCruiser
+from bot.behaviors.combat import SeekAndDestroy, TankDefence, ArmyAttack
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "1.0.2"
-    CODE_NAME: str = "FootLoose"
+    VERSION: str = "1.1.0"
+    CODE_NAME: str = "CheeseNoMore"
 
     def __init__(self, game_step_override: Optional[int] = None):
         super().__init__(game_step_override)
@@ -34,8 +26,10 @@ class BruceBot(AresBot):
     async def on_start(self) -> None:
         await super(BruceBot, self).on_start()
 
+        self.cheese_in_progress = False
         self.seek_and_destroy = False
-        
+        self.battlecruiser_production_started = False
+
         self.picket_positions = PicketDefence.generate(self)
         self.tank_positions = TankDefence.generate(self)
         self.rebuildDestroyStructure = RebuildDestroyStructure()
@@ -61,9 +55,7 @@ class BruceBot(AresBot):
         self.register_behavior(DropMule())
         self.register_behavior(ControlSupplyDepot())
         self.register_behavior(ProxyBuilder())
-        if self.unit_pending(UnitTypeId.BATTLECRUISER) or hasattr(self, 'battlecruiser_started'):
-            setattr(self, 'battlecruiser_started', True)
-            self.register_behavior(UpgradeTech())
+        self.register_behavior(UpgradeTech(cond=self.ready_to_upgrade))
         self.register_behavior(self.repair_controller)
         self.register_behavior(self.rebuildDestroyStructure)
         self.register_behavior(ReBuildAddons())
@@ -71,9 +63,11 @@ class BruceBot(AresBot):
 
         # Main actions
         if ArmyAttack({UnitTypeId.BATTLECRUISER}).execute(self, self.config, self.mediator):
+            high_threats = {UnitTypeId.MISSILETURRET, UnitTypeId.BUNKER, UnitTypeId.PHOTONCANNON, UnitTypeId.SPORECRAWLER}
+
             self.register_behavior(PicketDefence(pickets=self.picket_positions))
             self.register_behavior(TankDefence(tank_positions=self.tank_positions))
-            self.register_behavior(BattleCruiser(priority=WORKER_TYPES))
+            self.register_behavior(BattleCruiser(priorities=WORKER_TYPES, high_threats=high_threats))
             self.seek_and_destroy = False
 
         # Searching, seek and destroy
@@ -83,6 +77,14 @@ class BruceBot(AresBot):
             if not self.seek_and_destroy:
                 self.seek_and_destroy = True
                 await self.client.chat_send(f"{iteration} {self.time_formatted} Seeking, seek and destroy.", False)
+
+        # Reactions
+        if EarlyCheeseDefense().execute(self, self.config, self.mediator):
+            if not self.cheese_in_progress:
+                await self.client.chat_send(f"{iteration} {self.time_formatted} Early cheese defense activated.", False)
+                self.cheese_in_progress = True
+        else:
+            self.cheese_in_progress = False
 
         # Production
         if self.units(UnitTypeId.BATTLECRUISER).exists or self.unit_pending(UnitTypeId.BATTLECRUISER):
@@ -103,3 +105,9 @@ class BruceBot(AresBot):
     async def on_unit_destroyed(self, unit_tag: int) -> None:
         await super().on_unit_destroyed(unit_tag)
         self.rebuildDestroyStructure.register_destroyed_structure(unit_tag)
+
+    def ready_to_upgrade(self) -> bool:
+        if not self.battlecruiser_production_started:
+            if self.units(UnitTypeId.BATTLECRUISER).exists or self.unit_pending(UnitTypeId.BATTLECRUISER):
+                self.battlecruiser_production_started = True
+        return self.battlecruiser_production_started

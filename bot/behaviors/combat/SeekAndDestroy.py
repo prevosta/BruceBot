@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from random import uniform
 
 from sc2.position import Point2
+from sc2.ids.unit_typeid import UnitTypeId
 
 from ares import AresBot
 from ares.consts import WORKER_TYPES
@@ -15,7 +16,7 @@ class SeekAndDestroy(CombatGroupBehavior):
     def execute(self, ai: AresBot, config: dict, mediator) -> bool:
 
         # Get all non-worker units
-        combat_units = ai.units.filter(lambda u: u.type_id not in WORKER_TYPES)
+        combat_units = ai.units.filter(lambda u: u.type_id not in WORKER_TYPES | {UnitTypeId.MULE})
         
         if not combat_units.exists:
             return False

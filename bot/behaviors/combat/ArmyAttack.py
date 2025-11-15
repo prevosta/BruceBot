@@ -22,7 +22,7 @@ class ArmyAttack(CombatGroupBehavior):
         army = ai.units(self.army_types)
 
         if not army.exists:
-            return False
+            return True  # will wait until army is available
 
         targets: list[Point2] = [s.position for s in ai.enemy_structures(TOWNHALL_TYPES)]
 

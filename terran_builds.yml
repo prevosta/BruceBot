@@ -25,7 +25,7 @@ Builds:
         ProxyBuilder:
         - 1200 ENEMY_FOURTH STARPORT
         OpeningBuildOrder:
-        # Fast wall
+        # Fast wall []
         - 0 SUPPLYDEPOT @ RAMP
         - 0 SCV
         - 0 SCV
@@ -37,7 +37,7 @@ Builds:
         - 0 SCV
         - 0 ORBITAL
         - 0 MARINE
-        # Fast Tank
+        # Fast Tank [03:00]
         - 0 FACTORY
         - 0 SUPPLYDEPOT @ RAMP
         - 0 SCV
@@ -47,7 +47,7 @@ Builds:
         - 0 FACTORYTECHLAB
         - 0 ARMORY
         - 0 SIEGETANK
-        # Fast BC
+        # Fast BC [05:00]
         - 0 STARPORT @ ENEMY_FOURTH
         - 0 SCV
         - 0 MARINE x2
@@ -65,6 +65,7 @@ Builds:
         - 0 ENGINEERINGBAY
         - 0 MISSILETURRET
         - 0 MISSILETURRET @ RAMP
+        - 0 MISSILETURRET
         # Expand
         - 0 EXPAND @ NATURAL
         - 0 STARPORT @ NATURAL
@@ -78,4 +79,6 @@ Builds:
         TechUpgrades:
         - YAMATOCANNON
         - SHIPWEAPONS1
-        - SHIPARMOR1
+        - SHIPARMORS1
+        - SHIPWEAPONS2
+        - SHIPARMORS2
