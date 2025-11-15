@@ -25,7 +25,7 @@ from bot.behaviors.macro.TrainWorker import TrainWorker
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "1.0.1"
+    VERSION: str = "1.0.2"
     CODE_NAME: str = "FootLoose"
 
     def __init__(self, game_step_override: Optional[int] = None):

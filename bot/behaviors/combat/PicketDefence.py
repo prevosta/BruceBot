@@ -78,7 +78,7 @@ class PicketDefence(CombatGroupBehavior):
         if ai.enemy_race in [Race.Zerg, Race.Protoss]:
             corner_depots = list(ai.main_base_ramp.corner_depots)
             corner_depot = sorted(corner_depots, key=lambda d: cy_distance_to_squared(d.position, ai.start_location))[0]
-            return [Point2(corner_depot.position.towards(ai.start_location, 4))]
+            return [Point2(corner_depot.position.towards(ai.start_location, 2))]
 
         region = ai.mediator.get_map_data_object.where(ai.start_location)
 
@@ -141,7 +141,7 @@ class PicketDefence(CombatGroupBehavior):
         ingress_points = [p for p in ingress_points if cy_distance_to_squared(p, ai.main_base_ramp.top_center) > 4**2]
         corner_depots = list(ai.main_base_ramp.corner_depots)
         corner_depot = sorted(corner_depots, key=lambda d: cy_distance_to_squared(d.position, ai.start_location))[0]
-        ingress_points.append(Point2(corner_depot.position.towards(ai.start_location, 4)))
+        ingress_points.append(Point2(corner_depot.position.towards(ai.start_location, 2)))
 
         # Merge close ingress points (within 2 units) averaging their positions
         merged = []

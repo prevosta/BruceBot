@@ -72,7 +72,7 @@ class BattleCruiser(CombatGroupBehavior):
 
             # Defense logic
             elif enemy_at_the_gate.amount > 2 and cy_distance_to_squared(unit.position, ai.main_base_ramp.top_center) <= 30**2:
-                target = Point2(ai.main_base_ramp.top_center.towards(ai.start_location, 5))
+                target = Point2(ai.main_base_ramp.top_center.towards(ai.start_location, 2))
                 PathUnitToTarget(unit, mediator.get_air_grid, target).execute(ai, config, mediator)
 
         return order_issue
