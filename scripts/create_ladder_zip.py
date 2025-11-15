@@ -324,7 +324,7 @@ if __name__ == "__main__":
     # copy everything we need into a zip file
     zip_files_and_directories(zipfile_name)
 
-    print(f"Cleaning up...")
+    print("Cleaning up...")
 
     destination_directory = os.path.join("./", "python-sc2")
     if os.path.exists(destination_directory):
@@ -336,4 +336,4 @@ if __name__ == "__main__":
     if os.path.exists(destination_directory):
         shutil.rmtree(destination_directory, onerror=on_error)
 
-    print(f"Ladder zip complete.")
+    print("Ladder zip complete.")

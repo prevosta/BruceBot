@@ -1,13 +1,14 @@
 
-import shutil
-import subprocess
-from os import path, remove
-import platform
-import site
-import yaml
 import glob
 import json
+import platform
+import shutil
+import site
+import subprocess
 import sys
+from os import path, remove
+
+import yaml
 
 # Check for Windows
 if not platform.system() == 'Windows':

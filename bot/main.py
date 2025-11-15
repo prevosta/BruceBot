@@ -1,23 +1,38 @@
 from typing import Optional
 
-from sc2.unit import Unit
-from sc2.position import Point2
-from sc2.ids.unit_typeid import UnitTypeId
-
 from ares import AresBot
-from ares.consts import WORKER_TYPES
 from ares.behaviors.macro.mining import Mining
+from ares.consts import WORKER_TYPES
+from sc2.ids.unit_typeid import UnitTypeId
+from sc2.position import Point2
+from sc2.unit import Unit
 
+from bot.behaviors.combat import (
+    ArmyAttack,
+    BattleCruiser,
+    PicketDefence,
+    SeekAndDestroy,
+    TankDefence,
+)
+from bot.behaviors.macro import (
+    ArmyComposition,
+    AutoSupply,
+    ControlSupplyDepot,
+    DropMule,
+    EarlyCheeseDefense,
+    ProxyBuilder,
+    ReBuildAddons,
+    RebuildDestroyStructure,
+    RepairController,
+    TrainWorker,
+    UpgradeTech,
+)
 from bot.utils import add_placements, remove_illegal_positions
-from bot.behaviors.macro import ReBuildAddons, RebuildDestroyStructure, RepairController
-from bot.behaviors.macro import AutoSupply, ControlSupplyDepot, DropMule, EarlyCheeseDefense
-from bot.behaviors.macro import ArmyComposition, UpgradeTech, TrainWorker, ProxyBuilder
-from bot.behaviors.combat import TankDefence, PicketDefence, BattleCruiser
-from bot.behaviors.combat import SeekAndDestroy, TankDefence, ArmyAttack
+
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "1.2.0"
+    VERSION: str = "1.2.1"
     CODE_NAME: str = "HellFromAbove"
 
     def __init__(self, game_step_override: Optional[int] = None):
@@ -44,25 +59,9 @@ class BruceBot(AresBot):
         if iteration == 5:
             await self.client.chat_send(f"{self.NAME} v{self.VERSION} {self.CODE_NAME}", False)
             await self.client.chat_send("Calling in the fleet! Good luck, have fun!", False)
-            # near = [self.main_base_ramp.top_center, self.main_base_ramp.bottom_center]
-            # add_placements(self, UnitTypeId.BUNKER, self.start_location, near, radius=8)
             if self.main_base_ramp.barracks_correct_placement:
                 near = [self.main_base_ramp.barracks_correct_placement + Point2((2.5, -0.5)), self.start_location]
                 add_placements(self, UnitTypeId.MISSILETURRET, self.start_location, near, radius=8)
-
-        # Cheeze testing
-        # if iteration == int(.5 * 60 * 11.2):
-        #     await self.client.debug_create_unit([[UnitTypeId.PYLON, 1, self.main_base_ramp.bottom_center, 2]])
-        # if iteration == int(1.75 * 60 * 11.2):
-        #     await self.client.debug_create_unit([[UnitTypeId.ZERGLING, 12, self.main_base_ramp.bottom_center, 2]])
-        # if iteration == int(4.25 * 60 * 11.2):
-        #     await self.client.debug_create_unit([[UnitTypeId.VOIDRAY, 1, self.start_location, 2]])
-
-        # await self.client.debug_upgrade()
-        # await self.client.debug_create_unit([[UnitTypeId.BATTLECRUISER, 1, self.mediator.get_enemy_nat, 1]])
-        # await self.client.debug_create_unit([[UnitTypeId.BATTLECRUISER, 1, self.mediator.get_enemy_third, 1]])
-        # await self.client.debug_create_unit([[UnitTypeId.BATTLECRUISER, 1, self.mediator.get_enemy_fourth, 1]])
-        # await self.client.debug_create_unit([[UnitTypeId.MISSILETURRET, 1, self.enemy_start_locations[0], 2]])
 
         # Behaviors
         self.register_behavior(Mining())

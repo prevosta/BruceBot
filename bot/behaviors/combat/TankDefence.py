@@ -1,15 +1,13 @@
 import math
 from dataclasses import dataclass
 
-from cython_extensions import cy_distance_to_squared
-
-from sc2.position import Point2
-from sc2.ids.unit_typeid import UnitTypeId
-from sc2.ids.ability_id import AbilityId
-
 from ares import AresBot
-from ares.consts import BuildingSize
 from ares.behaviors.combat.group import CombatGroupBehavior
+from ares.consts import BuildingSize
+from cython_extensions import cy_distance_to_squared
+from sc2.ids.ability_id import AbilityId
+from sc2.ids.unit_typeid import UnitTypeId
+from sc2.position import Point2
 
 
 @dataclass

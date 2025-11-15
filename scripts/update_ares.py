@@ -10,8 +10,8 @@ if __name__ == "__main__":
         contents = f.readlines()
 
     insert_at_index = 0
-    for i, l in enumerate(contents):
-        if l.strip() == "[tool.poetry.dependencies]":
+    for i, key in enumerate(contents):
+        if key.strip() == "[tool.poetry.dependencies]":
             insert_at_index = i + 1
             break
 

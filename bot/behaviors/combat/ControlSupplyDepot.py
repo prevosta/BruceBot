@@ -1,13 +1,12 @@
 from dataclasses import dataclass
 
-from sc2.units import Units
-from sc2.ids.unit_typeid import UnitTypeId
-from sc2.ids.ability_id import AbilityId
-
+from ares.behaviors.combat.group import CombatGroupBehavior
 from ares.consts import UnitTreeQueryType
 from ares.main import AresBot
-from ares.behaviors.combat.group import CombatGroupBehavior
 from ares.managers.manager_mediator import ManagerMediator
+from sc2.ids.ability_id import AbilityId
+from sc2.ids.unit_typeid import UnitTypeId
+from sc2.units import Units
 
 
 @dataclass

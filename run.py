@@ -1,11 +1,10 @@
-import sys
-import random
 import platform
-
+import random
+import sys
 from os import path
 from pathlib import Path
-from loguru import logger
 
+from loguru import logger
 from sc2 import maps
 from sc2.data import AIBuild, Difficulty, Race
 from sc2.main import run_game
@@ -15,8 +14,8 @@ sys.path.append("ares-sc2/src/ares")
 sys.path.append("ares-sc2/src")
 sys.path.append("ares-sc2")
 
-from ladder import run_ladder_game
-from bot.main import BruceBot
+from ladder import run_ladder_game  # noqa
+from bot.main import BruceBot  # noqa
 
 plt = platform.system()
 
@@ -33,9 +32,9 @@ else:
 MAP_FILE_EXT: str = "SC2Map"
 
 def main():
-    __user_config_location__: str = path.abspath(".")
+    __user_config_location__: str = path.abspath(".")  # noqa
 
-    bot_race: Race = Race.Terran
+    bot_race: Race = Race.Terran  # type: ignore[attr-defined]
     bot = Bot(bot_race, BruceBot(), "Bruce")
 
     if "--LadderServer" in sys.argv:
@@ -51,11 +50,11 @@ def main():
             if p.is_file() # and "Pylon" in p.name
         ]))
 
-        random_race = random.choice([Race.Zerg, Race.Terran, Race.Protoss])
+        random_race = random.choice([Race.Zerg, Race.Terran, Race.Protoss])  # type: ignore[attr-defined]
         # random_race = Race.Protoss
-        random_difficulty = random.choice([Difficulty.VeryHard, Difficulty.CheatVision, Difficulty.CheatMoney, Difficulty.CheatInsane])
+        random_difficulty = random.choice([Difficulty.VeryHard, Difficulty.CheatVision, Difficulty.CheatMoney, Difficulty.CheatInsane])  # type: ignore[attr-defined]
         # random_difficulty = Difficulty.CheatInsane
-        random_build = AIBuild.RandomBuild
+        random_build = AIBuild.RandomBuild  # type: ignore[attr-defined]
         # random_build = AIBuild.Macro  # AIBuild.Rush
 
         player1 = Bot(bot_race, BruceBot(), "Bruce")

@@ -1,28 +1,26 @@
 from typing import Dict, List
 
-from cython_extensions import cy_distance_to_squared
-
-from sc2.units import Units
-from sc2.ids.unit_typeid import UnitTypeId
-
 from ares import AresBot
+from ares.behaviors.combat.group import CombatGroupBehavior
 from ares.consts import WORKER_TYPES, UnitRole
 from ares.managers.manager_mediator import ManagerMediator
-from ares.behaviors.combat.group import CombatGroupBehavior
+from cython_extensions import cy_distance_to_squared
+from sc2.ids.unit_typeid import UnitTypeId
+from sc2.units import Units
 
 
 class RepairController(CombatGroupBehavior):
-    def __init__(self, crew_size: int = 2, repair_unit: bool = True, repair_worker: bool = False):
+    """Behavior to manage repairing of damaged units and structures."""
+
+    def __init__(self, crew_size: int = 2, cap_crew: int = 8, repair_unit: bool = True, repair_worker: bool = False):
         self.crew_size = crew_size
+        self.cap_crew = cap_crew
         self.repair_unit = repair_unit
         self.repair_worker = repair_worker
 
         self.damaged_units: Dict[int, List[int]] = {}
 
     def execute(self, ai: AresBot, config: dict, mediator: ManagerMediator) -> bool:
-
-        # roles = {tag: role for role, tags in mediator.get_unit_role_dict.items() for tag in tags}
-        # print([roles.get(tag) for tag in ai.workers.tags if roles.get(tag) != UnitRole.GATHERING])
 
         # Find damaged units
         damaged_units: Units = ai.structures.filter(lambda u: u.health_percentage < 1.0 and u.build_progress >= 1.0)
@@ -44,9 +42,11 @@ class RepairController(CombatGroupBehavior):
             self.damaged_units[unit.tag] = [w for w in self.damaged_units[unit.tag] if w in ai.workers.tags]
             crew_size = self.crew_size if unit.is_structure else self.crew_size * 2
             needed_crew = max(0, crew_size - len(self.damaged_units[unit.tag]))
+            total_crew = sum(len(self.damaged_units[uid]) for uid in self.damaged_units)
+            cap_crew = min(self.cap_crew, (ai.minerals + ai.vespene) // (2 * 15))
 
             # Assign - one at a time
-            if needed_crew > 0:
+            if needed_crew > 0 and total_crew < cap_crew:
                 worker = mediator.select_worker(target_position=unit.position)
 
                 if worker is None:

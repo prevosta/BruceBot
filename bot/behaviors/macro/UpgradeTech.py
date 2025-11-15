@@ -1,21 +1,20 @@
 from dataclasses import dataclass
 from typing import Callable
 
-from sc2.ids.unit_typeid import UnitTypeId
-from sc2.ids.ability_id import AbilityId
-from sc2.ids.upgrade_id import UpgradeId
-
 from ares import AresBot
+from ares.behaviors.combat.group.combat_group_behavior import CombatGroupBehavior
 from ares.consts import BUILDS
 from ares.managers.manager_mediator import ManagerMediator
-from ares.behaviors.combat.group.combat_group_behavior import CombatGroupBehavior
+from sc2.ids.ability_id import AbilityId
+from sc2.ids.unit_typeid import UnitTypeId
+from sc2.ids.upgrade_id import UpgradeId
 
 TECHUPGRADES = "TechUpgrades"
 @dataclass
 class UpgradeTech(CombatGroupBehavior):
     """Handles upgrading techs based on config."""
 
-    cond: Callable = lambda: True
+    cond: Callable = lambda: True  # noqa
 
     def execute(self, ai: AresBot, config: dict, mediator: ManagerMediator) -> bool:
         if not self.cond():

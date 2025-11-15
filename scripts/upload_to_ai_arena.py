@@ -1,4 +1,4 @@
-from os import path, environ
+from os import environ, path
 from typing import Union
 
 import requests
@@ -12,8 +12,8 @@ AUTO_UPLOAD_TO_AIARENA: str = "AutoUploadToAiarena"
 MY_BOT_NAME: str = "MyBotName"
 ZIPFILE_NAME: str = "bot.zip"
 
-TOKEN: str = environ.get(API_TOKEN_ENV)
-BOT_ID: str = environ.get(BOT_ID_ENV)
+TOKEN: str = environ.get(API_TOKEN_ENV, "")
+BOT_ID: str = environ.get(BOT_ID_ENV, "")
 URL: str = f"https://aiarena.net/api/bots/{BOT_ID}/"
 
 
@@ -26,7 +26,7 @@ def get_bot_description() -> str:
     """
     bot_name: str = "MyBot"
     if name := retrieve_value_from_config(MY_BOT_NAME):
-        bot_name = name
+        bot_name = name if isinstance(name, str) else bot_name
 
     return (
         f"# {bot_name}\n\n" "Made with [ares-sc2](https://github.com/AresSC2/ares-sc2)"
@@ -47,7 +47,7 @@ def retrieve_value_from_config(string: str) -> Union[str, bool, None]:
 if __name__ == "__main__":
     can_upload: bool = False
     if upload := retrieve_value_from_config(AUTO_UPLOAD_TO_AIARENA):
-        can_upload = upload
+        can_upload = upload if isinstance(upload, bool) else False
 
     if not can_upload:
         logger.info(

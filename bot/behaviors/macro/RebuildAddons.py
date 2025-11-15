@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 
-from sc2.ids.unit_typeid import UnitTypeId
-from sc2.ids.ability_id import AbilityId
-
 from ares import AresBot
 from ares.managers.manager_mediator import ManagerMediator
+from sc2.ids.ability_id import AbilityId
+from sc2.ids.unit_typeid import UnitTypeId
 
 
 @dataclass

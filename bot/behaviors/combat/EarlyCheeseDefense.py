@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 
-from cython_extensions import cy_distance_to_squared
-
-from sc2.unit import Unit
-from sc2.ids.unit_typeid import UnitTypeId
-
 from ares import AresBot
+from ares.behaviors.combat.group import CombatGroupBehavior
 from ares.consts import UnitRole
 from ares.managers.manager_mediator import ManagerMediator
-from ares.behaviors.combat.group import CombatGroupBehavior
+from cython_extensions import cy_distance_to_squared
+from sc2.ids.unit_typeid import UnitTypeId
+from sc2.unit import Unit
+
 
 @dataclass
 class EarlyCheeseDefense(CombatGroupBehavior):
@@ -32,7 +31,8 @@ class EarlyCheeseDefense(CombatGroupBehavior):
                 worker.stop()
 
         # Identify enemy proxy structures
-        proxy_structures = ai.enemy_structures.filter(lambda u: cy_distance_to_squared(u.position, ai.enemy_start_locations[0]) > 30**2)
+        region = mediator.get_map_data_object.where(ai.start_location)
+        proxy_structures = ai.enemy_structures.filter(lambda u: cy_distance_to_squared(u.position, ai.main_base_ramp) < 10**2 or region.is_inside_point(u.position))
         if not proxy_structures.exists:
             return False
 

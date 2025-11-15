@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from sc2.position import Point2
-
 from ares import AresBot
-from ares.consts import BUILDS
-from ares.managers.manager_mediator import ManagerMediator
 from ares.behaviors.combat.group import CombatGroupBehavior
 from ares.behaviors.macro.auto_supply import AutoSupply as auto_supply
+from ares.consts import BUILDS
+from ares.managers.manager_mediator import ManagerMediator
+from sc2.position import Point2
+
 
 @dataclass
 class AutoSupply(CombatGroupBehavior):

@@ -1,12 +1,11 @@
 from dataclasses import dataclass
 from random import uniform
 
-from sc2.position import Point2
-from sc2.ids.unit_typeid import UnitTypeId
-
 from ares import AresBot
-from ares.consts import WORKER_TYPES
 from ares.behaviors.combat.group import CombatGroupBehavior
+from ares.consts import WORKER_TYPES
+from sc2.ids.unit_typeid import UnitTypeId
+from sc2.position import Point2
 
 
 @dataclass

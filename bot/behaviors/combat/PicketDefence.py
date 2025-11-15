@@ -1,14 +1,12 @@
 from dataclasses import dataclass
 
-from cython_extensions import cy_distance_to_squared, cy_attack_ready
-
-from sc2.data import Race
-from sc2.position import Point2
-from sc2.ids.unit_typeid import UnitTypeId
-
 from ares import AresBot
 from ares.behaviors.combat.group import CombatGroupBehavior
 from ares.behaviors.combat.individual.keep_unit_safe import KeepUnitSafe
+from cython_extensions import cy_attack_ready, cy_distance_to_squared
+from sc2.data import Race
+from sc2.ids.unit_typeid import UnitTypeId
+from sc2.position import Point2
 
 
 @dataclass
@@ -87,6 +85,7 @@ class PicketDefence(CombatGroupBehavior):
 
         # Position in a circle around start location
         import math
+
         import numpy as np
         radius = 35
         center = ai.start_location

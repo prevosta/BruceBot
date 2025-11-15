@@ -1,12 +1,10 @@
-from cython_extensions import cy_distance_to_squared
-
-from sc2.position import Point2
-from sc2.ids.unit_typeid import UnitTypeId
-
 from ares import AresBot
 from ares.behaviors.combat.individual.siege_tank_decision import STATIC_DEFENCE
 from ares.consts import BuildingSize
 from ares.dicts.structure_to_building_size import STRUCTURE_TO_BUILDING_SIZE
+from cython_extensions import cy_distance_to_squared
+from sc2.ids.unit_typeid import UnitTypeId
+from sc2.position import Point2
 
 
 def remove_illegal_positions(ai: AresBot) -> None:
@@ -17,6 +15,7 @@ def remove_illegal_positions(ai: AresBot) -> None:
     for size_grp, positions in ai.mediator.get_placements_dict[ai.start_location].items():
         if size_grp == BuildingSize.FIVE_BY_FIVE:
             continue
+
         for position, _ in positions.items():
             if any([position.distance_to(ex) < 3 for ex in exclusion_zones]):
                 illegal_positions.append((size_grp, position))
@@ -24,6 +23,7 @@ def remove_illegal_positions(ai: AresBot) -> None:
     for size_grp, positions in ai.mediator.get_placements_dict[ai.start_location].items():
         for position, attributs in positions.items():
             top_ramp = ai.main_base_ramp.top_center
+
             if cy_distance_to_squared(position, top_ramp) < 8**2 and not attributs.get('is_wall', False):
                 illegal_positions.append((size_grp, position))
 

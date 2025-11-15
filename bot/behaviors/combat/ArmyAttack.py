@@ -1,15 +1,13 @@
 from dataclasses import dataclass
 
-from cython_extensions import cy_distance_to_squared
-
-from sc2.position import Point2
-from sc2.ids.unit_typeid import UnitTypeId
-
 from ares import AresBot
-from ares.consts import TOWNHALL_TYPES
-from ares.managers.manager_mediator import ManagerMediator
 from ares.behaviors.combat.group import CombatGroupBehavior
 from ares.behaviors.combat.individual.path_unit_to_target import PathUnitToTarget
+from ares.consts import TOWNHALL_TYPES
+from ares.managers.manager_mediator import ManagerMediator
+from cython_extensions import cy_distance_to_squared
+from sc2.ids.unit_typeid import UnitTypeId
+from sc2.position import Point2
 
 
 @dataclass
