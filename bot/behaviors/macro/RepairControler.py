@@ -22,6 +22,9 @@ class RepairController(CombatGroupBehavior):
 
     def execute(self, ai: AresBot, config: dict, mediator: ManagerMediator) -> bool:
 
+        if not ai.townhalls.exists:
+            return False
+
         # Find damaged units
         damaged_units: Units = ai.structures.filter(lambda u: u.health_percentage < 1.0 and u.build_progress >= 1.0)
 
@@ -31,7 +34,7 @@ class RepairController(CombatGroupBehavior):
         if self.repair_worker:
             damaged_units |= ai.units.filter(lambda u: u.health_percentage < 1.0 and u.type_id in WORKER_TYPES)
 
-        damaged_units = damaged_units.filter(lambda u: cy_distance_to_squared(u.position, ai.start_location) < 30**2)
+        damaged_units = damaged_units.filter(lambda u: any(cy_distance_to_squared(u.position, townhall.position) < 30**2 for townhall in ai.townhalls))  
 
         # Assign repair crew
         for unit in damaged_units:
@@ -64,6 +67,8 @@ class RepairController(CombatGroupBehavior):
             for worker_tag in self.damaged_units[damaged_unit]:
                 mediator.clear_role(tag=worker_tag)
                 mediator.assign_role(tag=worker_tag, role=UnitRole.GATHERING)
+                if worker := ai.units.find_by_tag(worker_tag):
+                    worker.move(ai.townhalls.closest_to(worker.position))
 
             del self.damaged_units[damaged_unit]
 

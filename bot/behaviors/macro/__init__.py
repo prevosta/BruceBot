@@ -5,6 +5,7 @@ from bot.behaviors.macro.AutoSupply import AutoSupply
 from bot.behaviors.macro.DropMule import DropMule
 from bot.behaviors.macro.ProxyBuilder import ProxyBuilder
 from bot.behaviors.macro.RebuildAddons import ReBuildAddons
+from bot.behaviors.macro.RampBuilder import RampBuilder
 from bot.behaviors.macro.RebuildDestroyStructure import RebuildDestroyStructure
 from bot.behaviors.macro.RepairControler import RepairController
 from bot.behaviors.macro.TrainWorker import TrainWorker
@@ -18,6 +19,7 @@ __all__ = [
     "EarlyCheeseDefense",
     "ProxyBuilder",
     "ReBuildAddons",
+    "RampBuilder",
     "RebuildDestroyStructure",
     "RepairController",
     "TrainWorker",

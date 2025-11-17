@@ -9,7 +9,6 @@ from cython_extensions import cy_distance_to_squared
 from sc2.ids.ability_id import AbilityId
 from sc2.ids.unit_typeid import UnitTypeId
 from sc2.position import Point2
-from sc2.unit import Unit
 
 
 @dataclass
@@ -47,7 +46,7 @@ class BattleCruiser(CombatGroupBehavior):
                     continue
 
                 # Warping out on low health                
-                if unit.health_percentage < 0.25:
+                if unit.health_percentage < 0.15:
                     unit(AbilityId.EFFECT_TACTICALJUMP, base_location)
                     order_issue = True
                     continue
@@ -79,7 +78,7 @@ class BattleCruiser(CombatGroupBehavior):
 
             if targets.exists:
                 closest_enemy = targets.sorted(lambda x: cy_distance_to_squared(x.position, unit.position)).first
-                other_enemy = targets.filter(lambda e: e.tag != closest_enemy.tag and e.can_attack_air)
+                other_enemy = targets.filter(lambda e: e.tag != closest_enemy.tag and e.can_attack_air and cy_distance_to_squared(e.position, unit.position) < e.air_range**2)
 
                 if other_enemy.exists:
                     KeepUnitSafe(unit, mediator.get_air_grid).execute(ai, config, mediator)
@@ -87,11 +86,12 @@ class BattleCruiser(CombatGroupBehavior):
                     continue
 
                 elif cy_distance_to_squared(unit.position, closest_enemy.position) > (unit.ground_range -2) ** 2:
-                    leader: Unit = fleet.filter(lambda x: cy_distance_to_squared(x.position, unit.position) < 25**2).sorted(lambda x: x.tag)[0]
-                    if unit.tag == leader.tag:
-                        PathUnitToTarget(unit, mediator.get_air_grid, closest_enemy.position).execute(ai, config, mediator)
-                    else:
-                        PathUnitToTarget(unit, mediator.get_air_grid, leader.position).execute(ai, config, mediator)
+                    # leader: Unit = fleet.filter(lambda x: cy_distance_to_squared(x.position, unit.position) < 25**2).sorted(lambda x: x.tag)[0]
+                    # if unit.tag == leader.tag:
+                    unit.attack(closest_enemy)
+                    #     PathUnitToTarget(unit, mediator.get_air_grid, closest_enemy.position).execute(ai, config, mediator)
+                    # else:
+                    #     PathUnitToTarget(unit, mediator.get_air_grid, leader.position).execute(ai, config, mediator)
 
             # Defense logic
             elif enemy_at_the_gate.amount > 2 and cy_distance_to_squared(unit.position, ai.main_base_ramp.top_center) <= 30**2:

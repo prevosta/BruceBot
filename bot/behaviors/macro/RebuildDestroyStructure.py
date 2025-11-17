@@ -31,7 +31,7 @@ class RebuildDestroyStructure(CombatGroupBehavior):
 
                 if BuildStructure(base_location=closest_to, structure_id=structure_id, closest_to=closest_to).execute(ai, config, mediator):
                     print(f"Rebuild {unit_tag} {structure_id.name} {closest_to}.")
-                    del self.task[unit_tag]
+                    self.task.remove(unit_tag)
                     return True
 
         return False

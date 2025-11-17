@@ -47,7 +47,7 @@ def main():
         game_map = maps.get(random.choice([
             p.name.replace(f".{MAP_FILE_EXT}", "")
             for p in Path(MAPS_PATH).glob(f"*.{MAP_FILE_EXT}")
-            if p.is_file() # and "Pylon" in p.name
+            if p.is_file()  # and "Ultra" in p.name
         ]))
 
         random_race = random.choice([Race.Zerg, Race.Terran, Race.Protoss])  # type: ignore[attr-defined]
