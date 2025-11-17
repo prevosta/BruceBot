@@ -19,19 +19,15 @@ class BattleCruiser(CombatGroupBehavior):
     priorities: set[UnitTypeId] | None = None # Battery Cannon priority
 
     def execute(self, ai: AresBot, config: dict, mediator: ManagerMediator) -> bool:
-        # Yamato Cannon (Static Air Defense, Air2Air unit)
-        # Priority: AntiAir(if can win), Worker, TechBuilding
-        # Tatical Emergency Recall for defense
-
-        order_issue = False
         fleet = ai.units(UnitTypeId.BATTLECRUISER)
+        order_issue = False
 
         for unit in fleet:
             # Support logic
-            region = mediator.get_map_data_object.where(ai.start_location)
-            enemy_at_the_gate = ai.enemy_units.filter(lambda e: e.is_visible and cy_distance_to_squared(e.position, ai.main_base_ramp.bottom_center) < 10**2)
-            enemy_at_the_gate |= ai.enemy_units.filter(lambda e: region.is_inside_point(e.position))
-            if enemy_at_the_gate.amount > 8 and cy_distance_to_squared(unit.position, ai.main_base_ramp.top_center) > 30**2:
+            ramp_structures = ai.structures({UnitTypeId.SUPPLYDEPOT, UnitTypeId.SUPPLYDEPOTLOWERED, UnitTypeId.BARRACKS})
+            ramp_structures = ramp_structures.filter(lambda d: cy_distance_to_squared(d.position, ai.main_base_ramp.top_center) < 5)
+            is_ramp_falling = any(u.health_percentage < 0.1 for u in ramp_structures)
+            if is_ramp_falling and cy_distance_to_squared(unit.position, ai.main_base_ramp.top_center) > 20**2:
                 unit(AbilityId.EFFECT_TACTICALJUMP, Point2(ai.main_base_ramp.top_center.towards(ai.start_location, 10)))
                 order_issue = True
                 continue
@@ -45,7 +41,7 @@ class BattleCruiser(CombatGroupBehavior):
                     order_issue = True
                     continue
 
-                # Warping out on low health                
+                # Warping out on low health
                 if unit.health_percentage < 0.15:
                     unit(AbilityId.EFFECT_TACTICALJUMP, base_location)
                     order_issue = True
@@ -86,16 +82,15 @@ class BattleCruiser(CombatGroupBehavior):
                     continue
 
                 elif cy_distance_to_squared(unit.position, closest_enemy.position) > (unit.ground_range -2) ** 2:
-                    # leader: Unit = fleet.filter(lambda x: cy_distance_to_squared(x.position, unit.position) < 25**2).sorted(lambda x: x.tag)[0]
-                    # if unit.tag == leader.tag:
                     unit.attack(closest_enemy)
-                    #     PathUnitToTarget(unit, mediator.get_air_grid, closest_enemy.position).execute(ai, config, mediator)
-                    # else:
-                    #     PathUnitToTarget(unit, mediator.get_air_grid, leader.position).execute(ai, config, mediator)
+                    order_issue = True
+                    continue
 
             # Defense logic
-            elif enemy_at_the_gate.amount > 2 and cy_distance_to_squared(unit.position, ai.main_base_ramp.top_center) <= 30**2:
+            elif ai.enemy_units.filter(lambda e: cy_distance_to_squared(e.position, ai.main_base_ramp.top_center) < 20**2).amount > 2 and cy_distance_to_squared(unit.position, ai.main_base_ramp.top_center) <= 20**2:
                 target = Point2(ai.main_base_ramp.top_center.towards(ai.start_location, 2))
                 PathUnitToTarget(unit, mediator.get_air_grid, target).execute(ai, config, mediator)
+                order_issue = True
+                continue
 
         return order_issue

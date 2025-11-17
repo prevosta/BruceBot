@@ -34,8 +34,8 @@ from bot.utils import add_placements, remove_illegal_positions, show_placements
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "2.0.0"
-    CODE_NAME: str = "HarderBetterFasterStronger"
+    VERSION: str = "2.0.1"
+    CODE_NAME: str = "BetterFasterStronger"
 
     def __init__(self, game_step_override: Optional[int] = None):
         super().__init__(game_step_override)
@@ -67,11 +67,8 @@ class BruceBot(AresBot):
                 near = [self.main_base_ramp.barracks_correct_placement + Point2((2.5, -0.5)), self.start_location]
                 add_placements(self, UnitTypeId.MISSILETURRET, self.start_location, near, radius=8)
                 minerals = self.mineral_field.closer_than(12, self.start_location)
-                # dist_apart = [(a.position, b.position, cy_distance_to_squared(a.position, b.position)) for a in minerals for b in minerals if a != b]
-                # furthest_apart = sorted(dist_apart, key=lambda x: x[2], reverse=True)[0]
-                near = [Point2(self.start_location.towards(minerals.center, 8)), Point2(self.start_location.towards(minerals.center, 12))]
+                near = [Point2(self.start_location.towards(minerals.center, 10)), Point2(self.start_location.towards(minerals.center, 12))]
                 add_placements(self, UnitTypeId.MISSILETURRET, self.start_location, near, radius=3)
-        show_placements(self, self.start_location)
         
         # Behaviors
         self.register_behavior(Mining())
@@ -111,7 +108,7 @@ class BruceBot(AresBot):
 
             if not self.seek_and_destroy:
                 self.seek_and_destroy = True
-                await self.client.chat_send(f"{iteration} {self.time_formatted} Seeking, seek and destroy.", False)
+                await self.client.chat_send(f"{iteration} {self.time_formatted} Searching, seek and destroy.", False)
 
         # Reactions
         if EarlyCheeseDefense().execute(self, self.config, self.mediator):

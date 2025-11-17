@@ -63,7 +63,6 @@ class ProxyBuilder(CombatGroupBehavior):
             actions_types = [UnitTypeId[x.split(" ")[1]] for x in proxy_actions]
             if structure_type not in actions_types:
                 continue
-            print(structure_type, actions_types)
 
             dist = cy_distance_to_squared(worker.position, target)
             for proxy_worker in proxy_workers:

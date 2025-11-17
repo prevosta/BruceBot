@@ -7,7 +7,6 @@ from ares.behaviors.combat.group import CombatGroupBehavior
 from ares.managers.manager_mediator import ManagerMediator
 from cython_extensions import cy_distance_to_squared
 from sc2.ids.unit_typeid import UnitTypeId
-from sc2.position import Point2
 
 PROXYBUILDER: str = "ProxyBuilder"
 
@@ -24,21 +23,37 @@ class RampBuilder(CombatGroupBehavior):
             target = building_tracker[worker_tag][TARGET].position
 
             # Only modify barracks placements
-            if structure_type != UnitTypeId.BARRACKS:
-                continue
+            if structure_type == UnitTypeId.BARRACKS:
 
-            # Skip if already targeting ramp barracks or out of range
-            distance_square = cy_distance_to_squared(target, ai.main_base_ramp.barracks_in_middle)
-            if not isinstance(target, Point2) or not (0.1 < distance_square < 5**2):
-                continue
+                if target == ai.main_base_ramp.barracks_in_middle:
+                    continue
 
-            # Modify target to ramp barracks
-            track = building_tracker.pop(worker_tag)
-            track[TARGET] = ai.main_base_ramp.barracks_in_middle
-            building_tracker[worker_tag] = track
-            logger.info(f"RampModifier: {structure_type.name} {distance_square:.2f} {ai.main_base_ramp.barracks_in_middle} -> {track[TARGET]}")
+                if any(cy_distance_to_squared(u.position, ai.main_base_ramp.barracks_in_middle) < 4 for u in ai.structures(UnitTypeId.BARRACKS)):
+                    continue
 
-            return True
+                # Modify target to ramp barracks
+                track = building_tracker.pop(worker_tag)
+                track[TARGET] = ai.main_base_ramp.barracks_in_middle
+                building_tracker[worker_tag] = track
+                logger.info(f"RampModifier: {structure_type.name}")
+
+                return True
+            
+            elif structure_type == UnitTypeId.SUPPLYDEPOT:
+
+                if target in ai.main_base_ramp.corner_depots:
+                    continue
+
+                for corner_depot in ai.main_base_ramp.corner_depots:
+                    if any(cy_distance_to_squared(u.position, corner_depot) < 1 for u in ai.structures({UnitTypeId.SUPPLYDEPOT, UnitTypeId.SUPPLYDEPOTLOWERED})):
+                        continue
+
+                    if target not in ai.main_base_ramp.corner_depots:
+                        track = building_tracker.pop(worker_tag)
+                        track[TARGET] = corner_depot
+                        building_tracker[worker_tag] = track
+                        logger.info(f"RampModifier: {structure_type.name}")
+
+                        return True
 
         return False
-    
