@@ -34,9 +34,4 @@ class ArmyAttack(CombatGroupBehavior):
         if not targets:
             return False
 
-        # Move to location
-        for unit in army.idle:
-            inx_target = int(ai.time) % len(targets)
-            PathUnitToTarget(unit, mediator.get_air_grid, targets[inx_target]).execute(ai, config, mediator)
-
         return True

@@ -34,8 +34,8 @@ from bot.utils import add_placements, remove_illegal_positions, show_placements
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "2.0.1"
-    CODE_NAME: str = "BetterFasterStronger"
+    VERSION: str = "2.1.0"
+    CODE_NAME: str = "Relentless"
 
     def __init__(self, game_step_override: Optional[int] = None):
         super().__init__(game_step_override)
@@ -69,9 +69,9 @@ class BruceBot(AresBot):
                 minerals = self.mineral_field.closer_than(12, self.start_location)
                 near = [Point2(self.start_location.towards(minerals.center, 10)), Point2(self.start_location.towards(minerals.center, 12))]
                 add_placements(self, UnitTypeId.MISSILETURRET, self.start_location, near, radius=3)
-        
+
         # Behaviors
-        self.register_behavior(Mining())
+        self.register_behavior(Mining(workers_per_gas=0 if self.cheese_in_progress else 3))
         self.register_behavior(DropMule())
         self.register_behavior(ControlSupplyDepot())
         self.register_behavior(ProxyBuilder(self.proxy_placements))
@@ -82,15 +82,26 @@ class BruceBot(AresBot):
         self.register_behavior(ReBuildAddons())
         self.register_behavior(AutoSupply(self.start_location))
 
+        # Reactions
+        if EarlyCheeseDefense().execute(self, self.config, self.mediator):
+            if not self.cheese_in_progress:
+                await self.client.chat_send(f"{iteration} {self.time_formatted} Early cheese defense activated.", False)
+                self.cheese_in_progress = True
+        else:
+            self.cheese_in_progress = False
+
+        if self.cheese_in_progress:
+            pass
+        
         # Main actions
-        if ArmyAttack({UnitTypeId.BATTLECRUISER}).execute(self, self.config, self.mediator):
+        elif ArmyAttack({UnitTypeId.BATTLECRUISER}).execute(self, self.config, self.mediator):
             high_threats = {
                 UnitTypeId.MISSILETURRET,
-                UnitTypeId.BUNKER, 
-                UnitTypeId.PHOTONCANNON, 
-                UnitTypeId.SPORECRAWLER, 
-                UnitTypeId.VIKINGFIGHTER, 
-                UnitTypeId.QUEEN, 
+                UnitTypeId.BUNKER,
+                UnitTypeId.PHOTONCANNON,
+                UnitTypeId.SPORECRAWLER,
+                UnitTypeId.VIKINGFIGHTER,
+                UnitTypeId.QUEEN,
                 UnitTypeId.CORRUPTOR,
                 UnitTypeId.VOIDRAY,
                 UnitTypeId.BATTLECRUISER,
@@ -109,14 +120,6 @@ class BruceBot(AresBot):
             if not self.seek_and_destroy:
                 self.seek_and_destroy = True
                 await self.client.chat_send(f"{iteration} {self.time_formatted} Searching, seek and destroy.", False)
-
-        # Reactions
-        if EarlyCheeseDefense().execute(self, self.config, self.mediator):
-            if not self.cheese_in_progress:
-                await self.client.chat_send(f"{iteration} {self.time_formatted} Early cheese defense activated.", False)
-                self.cheese_in_progress = True
-        else:
-            self.cheese_in_progress = False
 
         # Production
         if self.units(UnitTypeId.BATTLECRUISER).exists or self.unit_pending(UnitTypeId.BATTLECRUISER):
