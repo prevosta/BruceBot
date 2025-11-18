@@ -36,7 +36,7 @@ from bot.utils import add_placements, remove_illegal_positions
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "2.2.1"
+    VERSION: str = "2.2.2"
     CODE_NAME: str = "Fearless"
 
     def __init__(self, game_step_override: Optional[int] = None):

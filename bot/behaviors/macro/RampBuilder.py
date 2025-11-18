@@ -8,6 +8,7 @@ from ares.behaviors.combat.group import CombatGroupBehavior
 from ares.managers.manager_mediator import ManagerMediator
 from cython_extensions import cy_distance_to_squared
 from sc2.ids.unit_typeid import UnitTypeId
+from sc2.position import Point2
 
 PROXYBUILDER: str = "ProxyBuilder"
 
@@ -20,8 +21,12 @@ class RampBuilder(CombatGroupBehavior):
         # Inspect building tracker...
         building_tracker: dict = mediator.get_building_tracker_dict
         for worker_tag in building_tracker:
+
+            if building_tracker[worker_tag][TARGET] is None:
+                continue
+
             structure_type = building_tracker[worker_tag][ID]
-            target = building_tracker[worker_tag][TARGET].position
+            target: Point2 = building_tracker[worker_tag][TARGET].position
 
             # 1- Prioritize barracks on the ramp.
             if structure_type == UnitTypeId.BARRACKS:
