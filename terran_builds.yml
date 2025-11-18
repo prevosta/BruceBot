@@ -23,9 +23,10 @@ Builds:
         AutoSupplyAtSupply: 40
         PersistentWorker: False
         ArmyComposition:
+        # - REAPER 1
         - BATTLECRUISER 14
-        - MARINE 8 # 50
-        - SIEGETANK 1 # 3
+        - MARINE 8
+        - SIEGETANK 1
         TechUpgrades:
         - YAMATOCANNON
         - SHIPWEAPONS1
@@ -34,6 +35,8 @@ Builds:
         - SHIPARMORS2
         ProxyBuilder:
         - 900 STARPORT
+        - 3000 REPAIRING
+        - 3050 REPAIRING
         OpeningBuildOrder:
         # Fast wall [01:40]
         - 0 SUPPLYDEPOT @ RAMP

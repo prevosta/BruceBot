@@ -34,7 +34,9 @@ class RepairController(CombatGroupBehavior):
         if self.repair_worker:
             damaged_units |= ai.units.filter(lambda u: u.health_percentage < 1.0 and u.type_id in WORKER_TYPES)
 
-        damaged_units = damaged_units.filter(lambda u: any(cy_distance_to_squared(u.position, townhall.position) < 30**2 for townhall in ai.townhalls))  
+        near_townhalls = damaged_units.filter(lambda u: any(cy_distance_to_squared(u.position, townhall.position) < 30**2 for townhall in ai.townhalls))
+        near_workers = damaged_units.filter(lambda u: any(cy_distance_to_squared(u.position, unit.position) < 10**2 for unit in ai.workers))
+        damaged_units = near_townhalls | near_workers 
 
         # Assign repair crew
         for unit in damaged_units:
@@ -50,21 +52,36 @@ class RepairController(CombatGroupBehavior):
 
             # Assign - one at a time
             if needed_crew > 0 and total_crew < cap_crew:
-                worker = mediator.select_worker(target_position=unit.position)
+                worker = None
+                role=UnitRole.PROXY_WORKER
 
-                if worker is None:
+                proxy_workers = mediator.get_units_from_role(role=UnitRole.PROXY_WORKER, unit_type=WORKER_TYPES)
+                proxy_workers = proxy_workers.filter(lambda u: not u.is_constructing_scv)
+                proxy_workers = proxy_workers.filter(lambda u: cy_distance_to_squared(u.position, unit.position) < 12**2)  # type: ignore
+                proxy_workers = proxy_workers.filter(lambda u: u.tag not in self.damaged_units[unit.tag])  # type: ignore
+
+                if proxy_workers.exists:
+                    worker = proxy_workers.closest_to(unit.position)
+                else:
+                    role=UnitRole.REPAIRING
+                    worker = mediator.select_worker(target_position=unit.position, force_close=True)
+
+                if (worker is None) or (cy_distance_to_squared(worker.position, unit.position) > 25**2):
                     break
 
                 mediator.clear_role(tag=worker.tag)
-                mediator.assign_role(tag=worker.tag, role=UnitRole.REPAIRING)
+                mediator.assign_role(tag=worker.tag, role=role)
                 mediator.remove_worker_from_mineral(worker_tag=worker.tag)
 
                 self.damaged_units[unit.tag].append(worker.tag)
 
         # Remove - clean up units no longer damaged
+        proxy_workers = mediator.get_units_from_role(role=UnitRole.PROXY_WORKER, unit_type=WORKER_TYPES)
         units_to_remove = [tag for tag in self.damaged_units if tag not in damaged_units.tags]
         for damaged_unit in units_to_remove:
             for worker_tag in self.damaged_units[damaged_unit]:
+                if worker_tag in proxy_workers.tags:
+                    continue
                 mediator.clear_role(tag=worker_tag)
                 mediator.assign_role(tag=worker_tag, role=UnitRole.GATHERING)
                 if worker := ai.units.find_by_tag(worker_tag):

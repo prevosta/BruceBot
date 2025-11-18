@@ -2,12 +2,10 @@ from dataclasses import dataclass
 
 from ares import AresBot
 from ares.behaviors.combat.group import CombatGroupBehavior
-from ares.behaviors.combat.individual.path_unit_to_target import PathUnitToTarget
 from ares.consts import TOWNHALL_TYPES
 from ares.managers.manager_mediator import ManagerMediator
 from cython_extensions import cy_distance_to_squared
 from sc2.ids.unit_typeid import UnitTypeId
-from sc2.position import Point2
 
 
 @dataclass
@@ -19,19 +17,26 @@ class ArmyAttack(CombatGroupBehavior):
     def execute(self, ai: AresBot, config: dict, mediator: ManagerMediator) -> bool:
         army = ai.units(self.army_types)
 
+        # Wait until army is available
         if not army.exists:
-            return True  # will wait until army is available
+            return True  
 
-        targets: list[Point2] = [s.position for s in ai.enemy_structures(TOWNHALL_TYPES)]
+        # Attack until main townhall is destroyed
+        if army.filter(lambda u: cy_distance_to_squared(u.position, ai.enemy_start_locations[0]) < 10**2).exists:
+            if ai.enemy_structures(TOWNHALL_TYPES).filter(lambda u: cy_distance_to_squared(u.position, ai.enemy_start_locations[0]) < 10**2).exists:
+                setattr(ai, '_enemy_main_destroy', False)
+                return True
+            setattr(ai, '_enemy_main_destroy', True)
 
-        if not getattr(ai, 'main_townhall_destroyed', False):
-            targets.append(ai.enemy_start_locations[0])
+        # Attack until natural townhall is destroyed
+        if army.filter(lambda u: cy_distance_to_squared(u.position, mediator.get_enemy_nat) < 10**2).exists:
+            if ai.enemy_structures(TOWNHALL_TYPES).filter(lambda u: cy_distance_to_squared(u.position, mediator.get_enemy_nat) < 10**2).exists:
+                setattr(ai, '_enemy_nat_destroy', False)
+                return True 
+            setattr(ai, '_enemy_nat_destroy', True)
 
-            if army.filter(lambda u: cy_distance_to_squared(u.position, ai.enemy_start_locations[0]) < 10**2).exists:
-                if not ai.enemy_structures(TOWNHALL_TYPES).filter(lambda u: cy_distance_to_squared(u.position, ai.enemy_start_locations[0]) < 10**2).exists:
-                    setattr(ai, 'main_townhall_destroyed', True)
-
-        if not targets:
+        # Attack until main and natural are seen and destroyed
+        if getattr(ai, '_enemy_main_destroy', False) and getattr(ai, '_enemy_nat_destroy', False):
             return False
 
         return True

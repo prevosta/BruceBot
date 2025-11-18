@@ -11,9 +11,10 @@ class TrainWorker(CombatGroupBehavior):
     """Manages worker training at all townhalls."""
 
     n_per_townhall: int = 22
+    n_extra: int = 0
 
     def execute(self, ai: AresBot, config: dict, mediator: ManagerMediator) -> bool:
-        n_workers = ai.townhalls.amount * self.n_per_townhall
+        n_workers = (ai.townhalls.amount * self.n_per_townhall) + self.n_extra
 
         for townhall in ai.townhalls:
             if townhall.is_idle and ai.can_afford(UnitTypeId.SCV) and ai.workers.amount < n_workers:

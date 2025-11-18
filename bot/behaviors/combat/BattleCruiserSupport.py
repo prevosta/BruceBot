@@ -33,7 +33,7 @@ class BattleCruiserSupport(CombatIndividualBehavior):
         is_ramp_falling = any(u.health_percentage < 0.1 for u in ramp_structures)
         is_ship_nearby = cy_distance_to_squared(self.unit.position, ai.main_base_ramp.top_center) < 20**2
 
-        if (enemy_in_base.exists or is_ramp_falling) and not is_ship_nearby:
+        if (enemy_in_base.amount > 3 or is_ramp_falling) and not is_ship_nearby:
             if AbilityId.EFFECT_TACTICALJUMP in self.unit.abilities:
                 self.unit(AbilityId.EFFECT_TACTICALJUMP, Point2(ai.main_base_ramp.top_center.towards(ai.start_location, 10)))
                 return True

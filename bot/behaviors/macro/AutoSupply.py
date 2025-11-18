@@ -10,7 +10,7 @@ from sc2.position import Point2
 
 @dataclass
 class AutoSupply(CombatGroupBehavior):
-    """Behavior to automatically build supply depots when supply is low."""
+    """Behavior to automatically build supply depots when supply cap is reached or exceeded."""
 
     base_location: Point2
 

@@ -15,6 +15,7 @@ from bot.behaviors.combat import (
     SeekAndDestroy,
     TankDefence,
 )
+from bot.behaviors.combat.BattleCruiserYamato import BattleCruiserYamato
 from bot.behaviors.macro import (
     ArmyComposition,
     AutoSupply,
@@ -29,13 +30,13 @@ from bot.behaviors.macro import (
     TrainWorker,
     UpgradeTech,
 )
-from bot.utils import add_placements, remove_illegal_positions, show_placements
+from bot.utils import add_placements, remove_illegal_positions
 
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "2.1.0"
-    CODE_NAME: str = "Relentless"
+    VERSION: str = "2.2.0"
+    CODE_NAME: str = "Fearless"
 
     def __init__(self, game_step_override: Optional[int] = None):
         super().__init__(game_step_override)
@@ -71,16 +72,16 @@ class BruceBot(AresBot):
                 add_placements(self, UnitTypeId.MISSILETURRET, self.start_location, near, radius=3)
 
         # Behaviors
-        self.register_behavior(Mining(workers_per_gas=0 if self.cheese_in_progress else 3))
-        self.register_behavior(DropMule())
-        self.register_behavior(ControlSupplyDepot())
-        self.register_behavior(ProxyBuilder(self.proxy_placements))
-        self.register_behavior(RampBuilder())
-        self.register_behavior(UpgradeTech(self.ready_to_upgrade))
-        self.register_behavior(self.repair_controller)
-        self.register_behavior(self.rebuildDestroyStructure)
-        self.register_behavior(ReBuildAddons())
-        self.register_behavior(AutoSupply(self.start_location))
+        Mining(workers_per_gas=0 if self.cheese_in_progress else 3).execute(self, self.config, self.mediator)
+        DropMule().execute(self, self.config, self.mediator)
+        ControlSupplyDepot().execute(self, self.config, self.mediator)
+        ProxyBuilder(self.proxy_placements).execute(self, self.config, self.mediator)
+        RampBuilder().execute(self, self.config, self.mediator)
+        UpgradeTech(self.ready_to_upgrade).execute(self, self.config, self.mediator)
+        self.repair_controller.execute(self, self.config, self.mediator)
+        self.rebuildDestroyStructure.execute(self, self.config, self.mediator)
+        ReBuildAddons().execute(self, self.config, self.mediator)
+        AutoSupply(self.start_location).execute(self, self.config, self.mediator)
 
         # Reactions
         if EarlyCheeseDefense().execute(self, self.config, self.mediator):
@@ -108,14 +109,16 @@ class BruceBot(AresBot):
                 UnitTypeId.CARRIER,
             }
 
-            self.register_behavior(PicketDefence(pickets=self.picket_positions))
-            self.register_behavior(TankDefence(tank_positions=self.tank_positions))
-            self.register_behavior(BattleCruiser(priorities=WORKER_TYPES, high_threats=high_threats))
+            PicketDefence(pickets=self.picket_positions).execute(self, self.config, self.mediator)
+            TankDefence(tank_positions=self.tank_positions).execute(self, self.config, self.mediator)
+            BattleCruiser(self.proxy_placements[0], priorities=WORKER_TYPES, high_threats=high_threats).execute(self, self.config, self.mediator)
             self.seek_and_destroy = False
 
         # Searching, seek and destroy
         else:
-            self.register_behavior(SeekAndDestroy())
+            SeekAndDestroy().execute(self, self.config, self.mediator)
+            for unit in self.units(UnitTypeId.BATTLECRUISER):
+                BattleCruiserYamato(unit).execute(self, self.config, self.mediator)
 
             if not self.seek_and_destroy:
                 self.seek_and_destroy = True
@@ -123,8 +126,8 @@ class BruceBot(AresBot):
 
         # Production
         if self.units(UnitTypeId.BATTLECRUISER).exists or self.unit_pending(UnitTypeId.BATTLECRUISER):
-            self.register_behavior(ArmyComposition())
-            self.register_behavior(TrainWorker())
+            ArmyComposition().execute(self, self.config, self.mediator)
+            TrainWorker(n_extra=4).execute(self, self.config, self.mediator)
 
     async def on_unit_created(self, unit: Unit) -> None:
         """Called when a unit is created."""

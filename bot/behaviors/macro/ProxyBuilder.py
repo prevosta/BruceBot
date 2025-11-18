@@ -38,11 +38,6 @@ class ProxyBuilder(CombatGroupBehavior):
 
                     return True
 
-        # Reassign idle workers that are close to their target to proxy worker role
-        for worker in mediator.get_units_from_role(role=UnitRole.PROXY_WORKER).filter(lambda u: u.is_constructing_scv):
-            mediator.clear_role(tag=worker.tag)
-            mediator.assign_role(tag=worker.tag, role=UnitRole.GATHERING)
-
         # Retrieve proxy workers
         proxy_workers = mediator.get_units_from_role(role=UnitRole.PROXY_WORKER).filter(lambda u: not u.is_constructing_scv)
         if not proxy_workers:
@@ -60,7 +55,7 @@ class ProxyBuilder(CombatGroupBehavior):
                 continue
 
             structure_type = building_tracker[worker_tag][ID]
-            actions_types = [UnitTypeId[x.split(" ")[1]] for x in proxy_actions]
+            actions_types = [UnitTypeId[x.split(" ")[1]] if x.split(" ")[1].upper() in UnitTypeId._member_map_ else None for x in proxy_actions ]
             if structure_type not in actions_types:
                 continue
 
@@ -76,7 +71,7 @@ class ProxyBuilder(CombatGroupBehavior):
                     mediator.assign_role(tag=worker.tag, role=UnitRole.GATHERING)
                     proxy_worker.stop()
 
-                    logger.info(f"ProxyBuilder: {structure_type.name}")
+                    logger.info(f"ProxyBuilder: {structure_type.name if structure_type else 'Unknown'}")
 
                     return True
 
