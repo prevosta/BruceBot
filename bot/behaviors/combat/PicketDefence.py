@@ -73,7 +73,7 @@ class PicketDefence(CombatGroupBehavior):
     def generate(ai: AresBot) -> list[Point2]:
         """Generate picket positions around the main base ramp and climber ingress points."""
 
-        if ai.enemy_race in [Race.Zerg, Race.Protoss]:
+        if ai.enemy_race in [Race.Zerg, Race.Protoss]:  # type: ignore
             corner_depots = list(ai.main_base_ramp.corner_depots)
             corner_depot = sorted(corner_depots, key=lambda d: cy_distance_to_squared(d.position, ai.start_location))[0]
             return [Point2(corner_depot.position.towards(ai.start_location, 2))]

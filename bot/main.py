@@ -16,6 +16,7 @@ from bot.behaviors.combat import (
     TankDefence,
 )
 from bot.behaviors.combat.BattleCruiserYamato import BattleCruiserYamato
+from bot.behaviors.combat.ReaperScout import ReaperScout
 from bot.behaviors.macro import (
     ArmyComposition,
     AutoSupply,
@@ -129,6 +130,11 @@ class BruceBot(AresBot):
             ArmyComposition().execute(self, self.config, self.mediator)
             TrainWorker(n_extra=4).execute(self, self.config, self.mediator)
 
+        # Scouting
+        for scout in self.units(UnitTypeId.REAPER):
+            waypoints = [x[0] for x in self.mediator.get_enemy_expansions[1:-2]]
+            ReaperScout(scout, waypoints).execute(self, self.config, self.mediator)
+
     async def on_unit_created(self, unit: Unit) -> None:
         """Called when a unit is created."""
 
@@ -138,6 +144,8 @@ class BruceBot(AresBot):
         if unit.type_id == UnitTypeId.SIEGETANK and self.units(UnitTypeId.SIEGETANK).amount == 1 and self.time < 240:
             await self.client.chat_send(f"{self.actual_iteration} {self.time_formatted} {unit.type_id.name}", False)
         if unit.type_id == UnitTypeId.BATTLECRUISER and self.units(UnitTypeId.BATTLECRUISER).amount == 1 and self.time < 360:
+            await self.client.chat_send(f"{self.actual_iteration} {self.time_formatted} {unit.type_id.name}", False)
+        if unit.type_id == UnitTypeId.REAPER and self.units(UnitTypeId.REAPER).amount == 1:
             await self.client.chat_send(f"{self.actual_iteration} {self.time_formatted} {unit.type_id.name}", False)
 
     async def on_building_construction_started(self, unit: Unit) -> None:

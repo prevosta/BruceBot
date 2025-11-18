@@ -2,8 +2,6 @@ from dataclasses import dataclass
 
 from ares import AresBot
 from ares.behaviors.combat.individual import CombatIndividualBehavior
-from ares.behaviors.combat.individual.keep_unit_safe import KeepUnitSafe
-from ares.behaviors.combat.individual.path_unit_to_target import PathUnitToTarget
 from ares.managers.manager_mediator import ManagerMediator
 from cython_extensions import cy_distance_to_squared
 from sc2.ids.ability_id import AbilityId
@@ -31,11 +29,15 @@ class BattleCruiserYamato(CombatIndividualBehavior):
         if not targets.exists:
             return False
         
+        yamato_tags = getattr(ai, '_yamato_tags', [])
+        
         def yamato_priority(e):
-            # Prioritize targets (Structure > CanAttackAir > Health+Shield)
-            return e.is_structure, e.can_attack_air, e.health + e.shield
+            # Prioritize targets (NotListed > Structure > CanAttackAir > Health+Shield)
+            return e.tag in yamato_tags, e.is_structure, e.can_attack_air, e.health + e.shield
 
         target = targets.sorted(key=yamato_priority).first
         self.unit(AbilityId.YAMATO_YAMATOGUN, target)
+
+        setattr(ai, '_yamato_tags', yamato_tags + [self.unit.tag])
 
         return True

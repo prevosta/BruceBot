@@ -77,7 +77,7 @@ async def join_ladder_game(
     game_time_limit=None,
 ):
     ws_url = f"ws://{host}:{port}/sc2api"
-    ws_connection = await aiohttp.ClientSession().ws_connect(ws_url, timeout=120)
+    ws_connection = await aiohttp.ClientSession().ws_connect(ws_url, timeout=120) # type: ignore
 
     client = Client(ws_connection)
     try:

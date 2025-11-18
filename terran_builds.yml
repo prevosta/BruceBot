@@ -23,8 +23,8 @@ Builds:
         AutoSupplyAtSupply: 40
         PersistentWorker: False
         ArmyComposition:
-        # - REAPER 1
         - BATTLECRUISER 14
+        - REAPER 1
         - MARINE 8
         - SIEGETANK 1
         TechUpgrades:
