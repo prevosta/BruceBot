@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import json
 from loguru import logger
 
 from ares import AresBot
@@ -99,6 +100,10 @@ class ProxyBuilder(CombatGroupBehavior):
         import numpy as np
         map_info = ProxyBuilder.MapInfo()
 
+        # Try to load from cache
+        if cached_info := ProxyBuilder._load_map_info(ai):
+            return cached_info
+
         ground_grid = mediator.get_ground_grid != np.inf
         air_grid = mediator.get_air_grid != np.inf
 
@@ -192,8 +197,81 @@ class ProxyBuilder(CombatGroupBehavior):
 
             map_info.buildable_locations[location] = final_locations
 
+            # save map info in bot memory (data/map_info.json)
+            ProxyBuilder._save_map_info(ai, map_info)
+
         return map_info
     
+    @staticmethod
+    def _load_map_info(ai: AresBot) -> "ProxyBuilder.MapInfo | None":
+        """Load map info from file if it exists."""
+        import os
+        os.makedirs("data", exist_ok=True)
+        
+        try:
+            with open("data/map_info.json", "r") as f:
+                map_infos = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return None
+
+        if not map_infos or ai.game_info.map_name not in map_infos:
+            return None
+        
+        start_location_key = str(ai.start_location)
+        if start_location_key not in map_infos[ai.game_info.map_name]:
+            return None
+
+        info = map_infos[ai.game_info.map_name][start_location_key]
+        map_info = ProxyBuilder.MapInfo()
+        map_info.ground_min_x = info["ground_min_x"]
+        map_info.ground_max_x = info["ground_max_x"]
+        map_info.ground_min_y = info["ground_min_y"]
+        map_info.ground_max_y = info["ground_max_y"]
+        map_info.air_min_x = info["air_min_x"]
+        map_info.air_max_x = info["air_max_x"]
+        map_info.air_min_y = info["air_min_y"]
+        map_info.air_max_y = info["air_max_y"]
+        map_info.proxy_locations = [(Point2((p[0], p[1])), p[2]) for p in info["proxy_locations"]]
+        map_info.buildable_locations = {
+            Point2((float(loc.split(",")[0][1:]), float(loc.split(",")[1][:-1]))): [Point2((p[0], p[1])) for p in locs]
+            for loc, locs in info["buildable_locations"].items()
+        }
+        return map_info
+
+    @staticmethod
+    def _save_map_info(ai: AresBot, map_info: "ProxyBuilder.MapInfo") -> None:
+        """Save map info to file."""
+        import os
+        os.makedirs("data", exist_ok=True)
+        
+        try:
+            with open("data/map_info.json", "r") as f:
+                map_infos = json.load(f)
+        except FileNotFoundError:
+            map_infos = {}
+
+        if ai.game_info.map_name not in map_infos:
+            map_infos[ai.game_info.map_name] = {}
+
+        map_infos[ai.game_info.map_name][str(ai.start_location)] = {
+            "ground_min_x": int(map_info.ground_min_x),
+            "ground_max_x": int(map_info.ground_max_x),
+            "ground_min_y": int(map_info.ground_min_y),
+            "ground_max_y": int(map_info.ground_max_y),
+            "air_min_x": int(map_info.air_min_x),
+            "air_max_x": int(map_info.air_max_x),
+            "air_min_y": int(map_info.air_min_y),
+            "air_max_y": int(map_info.air_max_y),
+            "proxy_locations": [(p.x, p.y, float(d)) for p, d in map_info.proxy_locations],
+            "buildable_locations": {
+                f"({loc.x},{loc.y})": [(p.x, p.y) for p in locs]
+                for loc, locs in map_info.buildable_locations.items()
+            }
+        }
+        
+        with open("data/map_info.json", "w") as f:
+            json.dump(map_infos, f, indent=4)
+
     @staticmethod
     def show_proxy_locations(ai: AresBot, proxy_locations: dict[Point2, list[Point2]]) -> None:
         """Visualize the 3x3 Starport placements."""
