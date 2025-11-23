@@ -11,6 +11,15 @@ from sc2.ids.unit_typeid import UnitTypeId
 from sc2.position import Point2, Point3
 
 PROXYBUILDER: str = "ProxyBuilder"
+DEFAULT_PROXY = {
+    "Torches AIE": [[58.5, 39.5], [53.5, 42.5], [59.5, 169.5], [54.5, 166.5]],
+    "Ultralove AIE": [[145.5, 92.5], [152.5, 70.5], [36.5,  92.5], [38.5, 117.5]],
+    "Persephone AIE": [[20.5, 118.5], [20.5,115.5], [20.5, 57.5], [22.5, 68.5]],
+    "Pylon AIE": [[64.5, 136.5], [64.5, 133.5], [185.5, 130.5], [179.5, 134.5]],
+    "Ley Lines AIE": [[84.5, 35.5], [89.5, 32.5], [111.5, 139.5], [101.5, 142.5]],
+    "Magannatha AIE": [[81.5, 151.5], [146.5,  76.5], [145.5, 95.5]],
+}
+
 
 @dataclass
 class ProxyBuilder(CombatGroupBehavior):
@@ -273,20 +282,33 @@ class ProxyBuilder(CombatGroupBehavior):
             json.dump(map_infos, f, indent=4)
 
     @staticmethod
-    def show_proxy_locations(ai: AresBot, proxy_locations: dict[Point2, list[Point2]]) -> None:
+    def get_proxy_locations(ai: AresBot) -> list[Point2]:
+        """Retrieve predefined proxy locations for the current map."""
+
+        map_name = ai.game_info.map_name
+        proxy_locations = DEFAULT_PROXY.get(map_name, [])
+
+        if not proxy_locations:
+            print("Old way of computing proxy locations...")
+            map_info = ProxyBuilder.compute_map_info(ai, ai.mediator)
+            return map_info.buildable_locations[map_info.proxy_locations[0][0]]
+
+        def filter_locations(loc: Point2) -> bool:
+            return cy_distance_to_squared(loc, ai.enemy_start_locations[0]) < cy_distance_to_squared(loc, ai.start_location)
+
+        proxy_locations = [Point2((loc[0], loc[1])) for loc in proxy_locations]
+
+        return list(filter(filter_locations, proxy_locations))
+
+    @staticmethod
+    def show_proxy_locations(ai: AresBot) -> None:
         """Visualize the 3x3 Starport placements."""
 
-        for i, (location, buildable_locations) in enumerate(proxy_locations.items()):
-            z = ai.get_terrain_z_height(location)
-            p1 = Point3((location.x - 2.5, location.y - 2.5, z + 0.1))
-            p2 = Point3((location.x + 2.5, location.y + 2.5, z + 0.1))
-            ai.client.debug_box_out(p1, p2, color=(0, 255, 0) if i == 0 else (255, 255, 0))
-            ai.client.debug_text_3d(f"{i}", Point3((location.x, location.y, z + 0.2)), size=12, color=(255, 255, 0))
+        proxy_locations = ProxyBuilder.get_proxy_locations(ai)
 
-            for j, position in enumerate(buildable_locations):
-                z = ai.get_terrain_z_height(position)
-                # 3x3 building spans 1.5 units in each direction from center
-                p1 = Point3((position.x - 1.5, position.y - 1.5, z + 0.1))
-                p2 = Point3((position.x + 1.5, position.y + 1.5, z + 0.1))
-                ai.client.debug_text_3d(f"{j}", Point3((position.x, position.y, z + 0.2)), size=12, color=(255, 255, 0))
-                ai.client.debug_box_out(p1, p2, color=(0, 255, 0) if j == 0 else (255, 255, 0))  # Yellow for proxy locations
+        for i, p in enumerate(proxy_locations):
+            z = ai.get_terrain_z_height(p)
+            p1 = Point3((p.x - 1.5, p.y - 1.5, z + 0.1))
+            p2 = Point3((p.x + 1.5, p.y + 1.5, z + 0.1))
+            ai.client.debug_box_out(p1, p2, color=(0, 255, 0) if i == 0 else (255, 255, 0))
+            ai.client.debug_text_3d(f"{i} [{p.x},{p.y}]", Point3((p.x, p.y, z + 0.2)), size=12, color=(255, 255, 0))

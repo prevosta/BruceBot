@@ -36,7 +36,7 @@ from bot.utils import add_placements, remove_illegal_positions
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "2.2.3"
+    VERSION: str = "2.2.4"
     CODE_NAME: str = "Fearless"
 
     def __init__(self, game_step_override: Optional[int] = None):
@@ -55,11 +55,11 @@ class BruceBot(AresBot):
         self.repair_controller = RepairController()
 
         remove_illegal_positions(self)
-        self.map_info = ProxyBuilder.compute_map_info(self, self.mediator)
-        self.proxy_placements = self.map_info.buildable_locations[self.map_info.proxy_locations[0][0]]
+        self.proxy_placements = ProxyBuilder.get_proxy_locations(self)
 
     async def on_step(self, iteration: int) -> None:
         await super(BruceBot, self).on_step(iteration)
+        ProxyBuilder.show_proxy_locations(self)
 
         # Greetings
         if iteration == 15:

@@ -19,7 +19,7 @@ class BattleCruiserSupport(CombatIndividualBehavior):
     def execute(self, ai: AresBot, config: dict, mediator: ManagerMediator) -> bool:
 
         region = mediator.get_map_data_object.where(ai.start_location)
-        
+
         enemy_nearby = ai.enemy_units.filter(lambda e: e.is_visible and e.can_attack_ground)
         enemy_nearby = enemy_nearby.filter(lambda e: region.is_inside_point(e.position))
         enemy_in_base = enemy_nearby.filter(lambda e: cy_distance_to_squared(e.position, ai.main_base_ramp.top_center) > 3**2)
@@ -27,7 +27,7 @@ class BattleCruiserSupport(CombatIndividualBehavior):
 
         if not enemy_nearby.exists and not enemy_at_ramp.exists:
             return False
-        
+
         ramp_structures = ai.structures({UnitTypeId.SUPPLYDEPOT, UnitTypeId.SUPPLYDEPOTLOWERED, UnitTypeId.BARRACKS})
         ramp_structures = ramp_structures.filter(lambda d: cy_distance_to_squared(d.position, ai.main_base_ramp.top_center) < 5)
         is_ramp_falling = any(u.health_percentage < 0.1 for u in ramp_structures)
@@ -37,6 +37,9 @@ class BattleCruiserSupport(CombatIndividualBehavior):
             if AbilityId.EFFECT_TACTICALJUMP in self.unit.abilities:
                 self.unit(AbilityId.EFFECT_TACTICALJUMP, Point2(ai.main_base_ramp.top_center.towards(ai.start_location, 10)))
                 return True
+
+        if not is_ship_nearby:
+            return False
 
         if enemy_in_base.exists:
             self.unit.attack(enemy_in_base.sorted(lambda x: cy_distance_to_squared(x.position, self.unit.position)).first)
