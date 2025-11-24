@@ -22,15 +22,15 @@ class ArmyAttack(CombatGroupBehavior):
             return True  
 
         # Attack until main townhall is destroyed
-        if army.filter(lambda u: cy_distance_to_squared(u.position, ai.enemy_start_locations[0]) < 3**2).exists:
-            if ai.enemy_structures(TOWNHALL_TYPES).filter(lambda u: cy_distance_to_squared(u.position, ai.enemy_start_locations[0]) < 10**2).exists:
+        if army.filter(lambda u: cy_distance_to_squared(u.position, ai.enemy_start_locations[0]) < 10**2).exists:
+            if ai.enemy_structures(TOWNHALL_TYPES).filter(lambda u: cy_distance_to_squared(u.position, ai.enemy_start_locations[0]) < 3**2).exists:
                 setattr(ai, '_enemy_main_destroy', False)
                 return True
             setattr(ai, '_enemy_main_destroy', True)
 
         # Attack until natural townhall is destroyed
-        if army.filter(lambda u: cy_distance_to_squared(u.position, mediator.get_enemy_nat) < 3**2).exists:
-            if ai.enemy_structures(TOWNHALL_TYPES).filter(lambda u: cy_distance_to_squared(u.position, mediator.get_enemy_nat) < 10**2).exists:
+        if army.filter(lambda u: cy_distance_to_squared(u.position, mediator.get_enemy_nat) < 10**2).exists:
+            if ai.enemy_structures(TOWNHALL_TYPES).filter(lambda u: cy_distance_to_squared(u.position, mediator.get_enemy_nat) < 3**2).exists:
                 setattr(ai, '_enemy_nat_destroy', False)
                 return True 
             setattr(ai, '_enemy_nat_destroy', True)

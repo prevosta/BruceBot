@@ -73,6 +73,12 @@ class BruceBot(AresBot):
             await self.client.chat_send(f"{self.NAME} v{self.VERSION} {self.CODE_NAME}", False)
             await self.client.chat_send("Calling in the fleet! Good luck, have fun!", False)
 
+            await self.client.debug_create_unit([[UnitTypeId.BATTLECRUISER, 3, self.proxy_placements[0], 1]])
+            await self.client.debug_create_unit([[UnitTypeId.REAPER, 1, self.start_location, 1]])
+            await self.client.debug_create_unit([[UnitTypeId.NEXUS, 1, self.mediator.get_enemy_nat, 2]])
+            await self.client.debug_create_unit([[UnitTypeId.NEXUS, 1, self.mediator.get_enemy_third, 2]])
+            await self.client.debug_create_unit([[UnitTypeId.NEXUS, 1, self.mediator.get_enemy_fourth, 2]])
+
         # Behaviors
         Mining(workers_per_gas=0 if self.cheese_in_progress else 3).execute(self, self.config, self.mediator)
         DropMule().execute(self, self.config, self.mediator)
@@ -114,6 +120,12 @@ class BruceBot(AresBot):
             PicketDefence(pickets=self.picket_positions).execute(self, self.config, self.mediator)
             TankDefence(tank_positions=self.tank_positions).execute(self, self.config, self.mediator)
             BattleCruiser(self.proxy_placements[0], priorities=WORKER_TYPES, high_threats=high_threats).execute(self, self.config, self.mediator)
+
+            # Scouting
+            for scout in self.units(UnitTypeId.REAPER):
+                waypoints = [x[0] for x in self.mediator.get_enemy_expansions[1:-2]]
+                ReaperScout(scout, waypoints).execute(self, self.config, self.mediator)
+
             self.seek_and_destroy = False
 
         # Searching, seek and destroy
@@ -130,11 +142,6 @@ class BruceBot(AresBot):
         if self.units(UnitTypeId.BATTLECRUISER).exists or self.unit_pending(UnitTypeId.BATTLECRUISER):
             ArmyComposition().execute(self, self.config, self.mediator)
             TrainWorker(n_extra=4).execute(self, self.config, self.mediator)
-
-        # Scouting
-        for scout in self.units(UnitTypeId.REAPER):
-            waypoints = [x[0] for x in self.mediator.get_enemy_expansions[1:-2]]
-            ReaperScout(scout, waypoints).execute(self, self.config, self.mediator)
 
     async def on_unit_created(self, unit: Unit) -> None:
         """Called when a unit is created."""
