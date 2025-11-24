@@ -65,12 +65,14 @@ class RampBuilder(CombatGroupBehavior):
                 # 3- Switch other depots on non static defense positions.
                 group_size : BuildingSize = STRUCTURE_TO_BUILDING_SIZE[structure_type]
                 pos_locations = {building_pos: base_loc for base_loc in mediator.get_placements_dict for building_pos in mediator.get_placements_dict[base_loc][group_size]}
-                base_loc = pos_locations.get(target)
-                static_defence = mediator.get_placements_dict[base_loc][group_size][target].get('static_defence', False)
+                base_loc = pos_locations.get(target, ai.start_location)
 
-                if static_defence:
+                static_defence = mediator.get_placements_dict[base_loc][group_size][target].get('static_defence', False)
+                track_target = self.request_building_placement(ai, base_location=base_loc, structure_type=structure_type)
+
+                if static_defence and (track_target is not None):
                     track = building_tracker.pop(worker_tag)
-                    track[TARGET] = mediator.request_building_placement(base_location=base_loc, structure_type=structure_type, static_defence=False)
+                    track[TARGET] = track_target
                     building_tracker[worker_tag] = track
                     logger.info(f"RampBuilder: {structure_type.name}")
 
@@ -81,17 +83,46 @@ class RampBuilder(CombatGroupBehavior):
 
                 group_size : BuildingSize = STRUCTURE_TO_BUILDING_SIZE[structure_type]
                 pos_locations = {building_pos: base_loc for base_loc in mediator.get_placements_dict for building_pos in mediator.get_placements_dict[base_loc][group_size]}
-                base_loc = pos_locations.get(target)
-                static_defence = mediator.get_placements_dict[base_loc][group_size][target].get('static_defence', False)
+                base_loc = pos_locations.get(target, ai.start_location)
 
+                static_defence = mediator.get_placements_dict[base_loc][group_size][target].get('static_defence', False)
                 if static_defence:
                     continue
 
+                track_target = self.request_building_placement(ai, base_location=base_loc, structure_type=structure_type, static_defence=True)
+
+                if track_target is None:
+                    continue
+
                 track = building_tracker.pop(worker_tag)
-                track[TARGET] = mediator.request_building_placement(base_location=base_loc, structure_type=structure_type, static_defence=True)
+                track[TARGET] = track_target
                 building_tracker[worker_tag] = track
                 logger.info(f"RampBuilder: {structure_type.name}")
 
                 return True
 
         return False
+
+    def request_building_placement(self, ai: AresBot, base_location: Point2, structure_type: UnitTypeId, near: Point2 | None = None, static_defence: bool = False, is_wall: bool = False) -> Point2 | None:
+        """Request a building placement from the mediator."""
+
+        group_size : BuildingSize = STRUCTURE_TO_BUILDING_SIZE[structure_type]
+        placements = ai.mediator.get_placements_dict[base_location][group_size]
+
+        if is_wall:
+            wall_positions = [pos for pos, attribs in placements.items() if attribs.get('is_wall', False) and attribs.get('available', True)]
+
+            if near is not None:
+                wall_positions = sorted(wall_positions, key=lambda p: cy_distance_to_squared(p, near))
+
+            return wall_positions[0] if wall_positions else None
+
+        if static_defence:
+            static_defences = [pos for pos, attribs in placements.items() if attribs.get('static_defence', False) and attribs.get('available', True)]
+
+            if near is not None:
+                static_defences = sorted(static_defences, key=lambda p: cy_distance_to_squared(p, near))
+
+            return static_defences[0] if static_defences else None
+
+        return next((pos for pos, attribs in placements.items() if attribs.get('available', True)), None)

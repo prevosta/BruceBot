@@ -60,6 +60,9 @@ class ProxyBuilder(CombatGroupBehavior):
             if not worker or worker.tag in set(pw.tag for pw in proxy_workers) or worker.is_constructing_scv:
                 continue
 
+            if building_tracker[worker_tag][TARGET] is None:
+                continue
+
             target = building_tracker[worker_tag][TARGET].position
             if not isinstance(target, Point2):
                 continue

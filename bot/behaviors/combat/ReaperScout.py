@@ -20,7 +20,7 @@ class ReaperScout(CombatIndividualBehavior):
         waypoint_index = self._get_waypoint_index(ai) % len(waypoints)
 
         # Advance waypoint if close enough
-        if cy_distance_to_squared(self.unit.position, waypoints[waypoint_index]) < 2**2:
+        if cy_distance_to_squared(self.unit.position, waypoints[waypoint_index]) < 4**2:
             waypoint_index = (waypoint_index + 1) % len(waypoints)
             self._set_waypoint_index(ai, waypoint_index)
 

@@ -57,20 +57,21 @@ class BruceBot(AresBot):
         remove_illegal_positions(self)
         self.proxy_placements = ProxyBuilder.get_proxy_locations(self)
 
+        if self.main_base_ramp.barracks_correct_placement:
+            near = [self.main_base_ramp.barracks_correct_placement + Point2((2.5, -0.5)), self.start_location]
+            add_placements(self, UnitTypeId.MISSILETURRET, self.start_location, near, radius=8)  #, is_wall=True)
+
+            minerals = (self.mineral_field + self.vespene_geyser).closer_than(12, self.start_location)
+            near = [Point2(self.start_location.towards(minerals.center, 10)), Point2(self.start_location.towards(minerals.center, 12))]
+            add_placements(self, UnitTypeId.MISSILETURRET, self.start_location, near, radius=3)
+
     async def on_step(self, iteration: int) -> None:
         await super(BruceBot, self).on_step(iteration)
-        ProxyBuilder.show_proxy_locations(self)
 
         # Greetings
         if iteration == 15:
             await self.client.chat_send(f"{self.NAME} v{self.VERSION} {self.CODE_NAME}", False)
             await self.client.chat_send("Calling in the fleet! Good luck, have fun!", False)
-            if self.main_base_ramp.barracks_correct_placement:
-                near = [self.main_base_ramp.barracks_correct_placement + Point2((2.5, -0.5)), self.start_location]
-                add_placements(self, UnitTypeId.MISSILETURRET, self.start_location, near, radius=8)
-                minerals = self.mineral_field.closer_than(12, self.start_location)
-                near = [Point2(self.start_location.towards(minerals.center, 10)), Point2(self.start_location.towards(minerals.center, 12))]
-                add_placements(self, UnitTypeId.MISSILETURRET, self.start_location, near, radius=3)
 
         # Behaviors
         Mining(workers_per_gas=0 if self.cheese_in_progress else 3).execute(self, self.config, self.mediator)

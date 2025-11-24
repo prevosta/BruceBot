@@ -35,8 +35,8 @@ Builds:
         - SHIPARMORS2
         ProxyBuilder:
         - 900 STARPORT
-        - 3000 REPAIRING
-        - 3050 REPAIRING
+        - 3400 REPAIRING
+        - 3450 REPAIRING
         OpeningBuildOrder:
         # Fast wall [01:40]
         - 0 SUPPLYDEPOT @ RAMP
@@ -51,7 +51,7 @@ Builds:
         - 0 SCV
         - 0 SCV
         - 0 SUPPLYDEPOT @ RAMP
-        - 0 MARINE  # add delay (+4s)
+        - 0 MARINE  # add (+4s)
         # Fast Tank [02:50]
         - 0 STARPORT @ ENEMY_FOURTH
         - 0 FACTORYTECHLAB
@@ -68,7 +68,7 @@ Builds:
         - 0 MISSILETURRET
         - 0 SUPPLYDEPOT
         - 0 BATTLECRUISER
-        - 0 MISSILETURRET @ RAMP
+        - 0 MISSILETURRET
         - 0 ARMORY
         # Expand
         - 0 EXPAND

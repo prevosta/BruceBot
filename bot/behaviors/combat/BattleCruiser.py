@@ -10,6 +10,7 @@ from bot.behaviors.combat.BattleCruiserAttack import BattleCruiserAttack
 from bot.behaviors.combat.BattleCruiserPatrol import BattleCruiserPatrol
 from bot.behaviors.combat.BattleCruiserSupport import BattleCruiserSupport
 from bot.behaviors.combat.BattleCruiserRepair import BattleCruiserRepair
+from bot.behaviors.combat.BattleCruiserKiteBack import BattleCruiserKiteBack
 from bot.behaviors.combat.BattleCruiserYamato import BattleCruiserYamato
 
 @dataclass
@@ -34,6 +35,10 @@ class BattleCruiser(CombatGroupBehavior):
                 continue
 
             if BattleCruiserSupport(unit).execute(ai, config, mediator):
+                order_issue = True
+                continue
+
+            if BattleCruiserKiteBack(unit, self.staging_position).execute(ai, config, mediator):
                 order_issue = True
                 continue
 

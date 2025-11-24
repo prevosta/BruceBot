@@ -27,6 +27,13 @@ def remove_illegal_positions(ai: AresBot) -> None:
             if cy_distance_to_squared(position, top_ramp) < 8**2 and not attributs.get('is_wall', False):
                 illegal_positions.append((size_grp, position))
 
+    # Mark unreachable positions as unavailable
+    for placement_key in ai.mediator.get_placements_dict:
+        for size_grp, positions in ai.mediator.get_placements_dict[placement_key].items():
+            for position, attributs in positions.items():
+                if ai.mediator.find_raw_path(start=ai.start_location, target=position, grid=ai.mediator.get_ground_grid, sensitivity=1) is None:
+                    attributs['available'] = False
+
     ## Remove illegal positions from placements dict
     for size_grp, position in illegal_positions:
         del ai.mediator.get_placements_dict[ai.start_location][size_grp][position]
@@ -61,16 +68,16 @@ def add_placements(ai: AresBot, structure_type: UnitTypeId, location: Point2, ne
     # Add to placements dict
     grp_size = STRUCTURE_TO_BUILDING_SIZE[structure_type ]
     ai.mediator.get_placements_dict[location][grp_size][position] = {
-        'available': True, 
-        'has_addon': False, 
-        'is_wall': is_wall, 
-        'building_tag': 0, 
-        'worker_on_route': False, 
-        'time_requested': 0.0, 
-        'production_pylon': False, 
-        'bunker': structure_type == UnitTypeId.BUNKER, 
+        'available': True,
+        'has_addon': False,
+        'is_wall': is_wall,
+        'building_tag': 0,
+        'worker_on_route': False,
+        'time_requested': 0.0,
+        'production_pylon': False,
+        'bunker': structure_type == UnitTypeId.BUNKER,
         'optimal_pylon': False,
-        'first_pylon': False, 
+        'first_pylon': False,
         'static_defence': structure_type in STATIC_DEFENCE | {UnitTypeId.MISSILETURRET},
     }
 

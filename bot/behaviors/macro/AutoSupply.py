@@ -16,6 +16,11 @@ class AutoSupply(CombatGroupBehavior):
 
     def execute(self, ai: AresBot, config: dict, mediator: ManagerMediator) -> bool:
         opening_name = ai.build_order_runner.chosen_opening
+
+        if "AutoSupplyAtSupply" not in config[BUILDS][opening_name]:
+            return False
+
+        opening_name = ai.build_order_runner.chosen_opening
         auto_supply_at = config[BUILDS][opening_name]["AutoSupplyAtSupply"]
 
         if ai.build_order_runner.build_completed or ai.supply_used >= auto_supply_at:
