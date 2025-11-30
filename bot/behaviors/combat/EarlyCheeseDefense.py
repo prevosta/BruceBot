@@ -33,7 +33,7 @@ class EarlyCheeseDefense(CombatGroupBehavior):
 
         # Identify enemy proxy structures
         region = mediator.get_map_data_object.where(ai.start_location)
-        proxy_structures = ai.enemy_structures.filter(lambda u: cy_distance_to_squared(u.position, ai.main_base_ramp.top_center) < 10**2 or region.is_inside_point(u.position))
+        proxy_structures = ai.enemy_structures.filter(lambda u: region.is_inside_point(u.position) and cy_distance_to_squared(u.position, ai.main_base_ramp.bottom_center) > 6**2)
         if not proxy_structures.exists:
             return False
 
