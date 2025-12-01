@@ -30,7 +30,7 @@ class DropMule(CombatGroupBehavior):
             # Call down MULE
             townhall(AbilityId.CALLDOWNMULE_CALLDOWNMULE, best_mineral)
             return True
-        
+
         return False
 
     def _find_best_mineral_field(self, ai: AresBot, townhall: Unit) -> Unit | None:

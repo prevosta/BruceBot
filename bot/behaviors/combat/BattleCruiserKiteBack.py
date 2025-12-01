@@ -31,7 +31,6 @@ class BattleCruiserKiteBack(CombatIndividualBehavior):
         total_dps = sum(e.calculate_dps_vs_target(self.unit) for e in enemy_nearby)
         if total_dps <= self.dps_threshold:
             return False
-        print(f"BC kiting from {total_dps} DPS nearby.")
 
         def in_range(e: Unit, range: float) -> bool:
             real_range = self.unit.radius + e.radius + range

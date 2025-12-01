@@ -14,8 +14,9 @@ sys.path.append("ares-sc2/src/ares")
 sys.path.append("ares-sc2/src")
 sys.path.append("ares-sc2")
 
+from bot.red_bot import RedBot
+from bot.main import BruceBot
 from ladder import run_ladder_game  # noqa
-from bot.main import BruceBot  # noqa
 
 plt = platform.system()
 
@@ -47,17 +48,17 @@ def main():
         game_map = maps.get(random.choice([
             p.name.replace(f".{MAP_FILE_EXT}", "")
             for p in Path(MAPS_PATH).glob(f"*.{MAP_FILE_EXT}")
-            if p.is_file()  # and "Tor" in p.name
+            if p.is_file()  # and "Per" in p.name
         ]))
 
         random_race = random.choice([Race.Zerg, Race.Terran, Race.Protoss])  # type: ignore[attr-defined]
-        # random_race = Race.Protoss  # type: ignore[attr-defined]
+        # random_race = Race.Zerg  # type: ignore[attr-defined]
         random_difficulty = random.choice([Difficulty.VeryHard, Difficulty.CheatVision, Difficulty.CheatMoney, Difficulty.CheatInsane])  # type: ignore[attr-defined]
         # random_difficulty = Difficulty.CheatInsane  # type: ignore[attr-defined]
         random_build = AIBuild.RandomBuild  # type: ignore[attr-defined]
-        # random_build = AIBuild.Macro  # AIBuild.Rush  # type: ignore[attr-defined]
+        # random_build = AIBuild.Rush  # AIBuild.Rush  # type: ignore[attr-defined]
 
-        player1 = Bot(bot_race, BruceBot(), "Bruce")
+        player1 = Bot(bot_race, RedBot(), "Bruce")
         player2 = Computer(random_race, difficulty=random_difficulty, ai_build=random_build)
 
         run_game(game_map, [player1, player2], realtime=False)

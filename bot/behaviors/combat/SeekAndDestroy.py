@@ -21,6 +21,7 @@ class SeekAndDestroy(CombatGroupBehavior):
             return False
         
         enemy_targets = ai.enemy_units | ai.enemy_structures
+        enemy_targets = enemy_targets.filter(lambda u: u.type_id not in {UnitTypeId.LARVA, UnitTypeId.EGG})
         
         for unit in combat_units:
             if enemy_targets.exists:

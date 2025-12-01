@@ -1,10 +1,11 @@
 from ares import AresBot
-from ares.behaviors.combat.individual.siege_tank_decision import STATIC_DEFENCE
 from ares.consts import BuildingSize
+from ares.behaviors.combat.individual.siege_tank_decision import STATIC_DEFENCE
 from ares.dicts.structure_to_building_size import STRUCTURE_TO_BUILDING_SIZE
 from cython_extensions import cy_distance_to_squared
 from sc2.ids.unit_typeid import UnitTypeId
 from sc2.position import Point2
+from sc2.unit import Unit
 
 
 def remove_illegal_positions(ai: AresBot) -> None:
@@ -134,3 +135,33 @@ def show_placements(ai: AresBot, location: Point2) -> None:
 
                 color = (255, 0, 0) if attribut['has_addon'] or not attribut['available'] else (0, 255, 0)
                 ai.client.debug_box_out(p1, p2, color=color)
+
+async def get_next_corner_expansion(ai: AresBot) -> Point2 | None:
+    """Find next expansion location."""
+
+    enemy_start: Point2 = ai.enemy_start_locations[0]
+    own_start: Point2 = ai.start_location
+
+    closest_location: Point2 | None = None
+    closest_distance: float = ai.EXPANSION_GAP_THRESHOLD
+
+    for location in ai.expansion_locations_list:
+        distance: float = 0
+
+        def is_close_to_expansion(townhall: Unit) -> bool:
+            return cy_distance_to_squared(townhall.position, location.position) < ai.EXPANSION_GAP_THRESHOLD
+
+        if any(is_close_to_expansion(t) for t in ai.townhalls):
+            continue  # already taken
+
+        if enemy_path := await ai.client.query_pathing(enemy_start, location):
+            distance += float(enemy_path)
+
+        if own_path := await ai.client.query_pathing(own_start, location):
+            distance += float(own_path)
+
+        if (ai.EXPANSION_GAP_THRESHOLD < distance) and (distance > closest_distance):
+            closest_distance = distance
+            closest_location = location
+
+    return closest_location

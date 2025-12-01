@@ -7,14 +7,26 @@ from ares.managers.manager_mediator import ManagerMediator
 from sc2.ids.unit_typeid import UnitTypeId
 
 
+ARMY_COMPOSITION: str = "ArmyComposition"
+AUTO_ARMY_AT_TIME: str = "AutoArmyAtTime"
+AUTO_ARMY_AT_SUPPLY: str = "AutoArmyAtSupply"
+
 @dataclass
 class ArmyComposition(CombatGroupBehavior):
     """Defines the desired army composition at a given time (using config)."""
 
     def execute(self, ai: AresBot, config: dict, mediator: ManagerMediator) -> bool:
-        army_composition = config[BUILDS][ai.build_order_runner.chosen_opening].get("ArmyComposition")
+        army_composition = config.get(BUILDS, {}).get(ai.build_order_runner.chosen_opening, {}).get(ARMY_COMPOSITION)
+        auto_army_at_time = config.get(BUILDS, {}).get(ai.build_order_runner.chosen_opening, {}).get(AUTO_ARMY_AT_TIME, None)
+        auto_army_at_supply = config.get(BUILDS, {}).get(ai.build_order_runner.chosen_opening, {}).get(AUTO_ARMY_AT_SUPPLY, None)
 
         if not army_composition:
+            return False
+        
+        if auto_army_at_time and ai.time < auto_army_at_time:
+            return False
+        
+        if auto_army_at_supply and ai.supply_army < auto_army_at_supply:
             return False
 
         UNIT_STRUCT = {

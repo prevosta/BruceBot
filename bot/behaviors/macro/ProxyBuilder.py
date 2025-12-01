@@ -11,6 +11,7 @@ from sc2.ids.unit_typeid import UnitTypeId
 from sc2.position import Point2, Point3
 
 PROXYBUILDER: str = "ProxyBuilder"
+PROXYMODE: str = "ProxyMode"
 DEFAULT_PROXY = {
     "Torches AIE": [[58.5, 39.5], [53.5, 42.5], [59.5, 169.5], [54.5, 166.5]],
     "Ultralove AIE": [[145.5, 92.5], [152.5, 70.5], [36.5,  92.5], [38.5, 117.5]],
@@ -25,21 +26,25 @@ DEFAULT_PROXY = {
 class ProxyBuilder(CombatGroupBehavior):
     """Behavior to send a worker to build a proxy structure at a specified location (via config)."""
 
-    proxy_locations: list[Point2]
-
     def execute(self, ai: AresBot, config: dict, mediator: ManagerMediator) -> bool:
-        if not self.proxy_locations:
+        proxy_locations = ProxyBuilder.get_proxy_locations(ai)
+
+        if not proxy_locations:
             return False
 
         # Retrieve proxy build orders from config
         opening_name = ai.build_order_runner.chosen_opening
-        proxy_actions = config[BUILDS][opening_name].get(PROXYBUILDER, [])
+        proxy_actions: list = config.get(BUILDS, {}).get(opening_name, {}).get(PROXYBUILDER, [])
+        proxy_mode: str = config.get(BUILDS, {}).get(opening_name, {}).get(PROXYMODE, "DEFAULT").upper()
 
         # Issue proxy build orders at specified iterations
         for order in proxy_actions:
-            iteration = order.split(" ")[0]
+            order_split = order.split(" ")
+            iteration = order_split[0]
             if int(iteration) == ai.actual_iteration:
-                where = self.proxy_locations[0]
+                where = ai.build_order_runner._get_target(order_split[2].strip().upper()) if len(order_split) > 2 else proxy_locations[0]
+                if proxy_mode == "CUSTOM":
+                    where = proxy_locations[0]
                 if worker := mediator.select_worker(target_position=where):
                     mediator.clear_role(tag=worker.tag)
                     mediator.assign_role(tag=worker.tag, role=UnitRole.PROXY_WORKER)
@@ -50,7 +55,7 @@ class ProxyBuilder(CombatGroupBehavior):
 
         # Retrieve proxy workers
         proxy_workers = mediator.get_units_from_role(role=UnitRole.PROXY_WORKER).filter(lambda u: not u.is_constructing_scv)
-        if not proxy_workers:
+        if not proxy_workers or ai.time < 15:
             return False
 
         # Force usage of proxy workers if closer to the build location
@@ -68,15 +73,16 @@ class ProxyBuilder(CombatGroupBehavior):
                 continue
 
             structure_type = building_tracker[worker_tag][ID]
-            actions_types = [UnitTypeId[x.split(" ")[1]] if x.split(" ")[1].upper() in UnitTypeId._member_map_ else None for x in proxy_actions ]
-            if structure_type not in actions_types:
-                continue
+            # actions_types = [UnitTypeId[x.split(" ")[1]] if x.split(" ")[1].upper() in UnitTypeId._member_map_ else None for x in proxy_actions ]
+            # if structure_type not in actions_types:
+            #     continue
 
             dist = cy_distance_to_squared(worker.position, target)
             for proxy_worker in proxy_workers:
                 if cy_distance_to_squared(proxy_worker.position, target) < dist:
                     task = building_tracker.pop(worker.tag)
-                    task[TARGET] = self.proxy_locations[0]
+                    if proxy_mode == "CUSTOM":
+                        task[TARGET] = proxy_locations[0]
                     building_tracker[proxy_worker.tag] = task
                     proxy_worker.stop()
 
@@ -297,6 +303,8 @@ class ProxyBuilder(CombatGroupBehavior):
             return map_info.buildable_locations[map_info.proxy_locations[0][0]]
 
         def filter_locations(loc: Point2) -> bool:
+            if not ai.mediator.can_place_structure(position=loc, structure_type=UnitTypeId.SUPPLYDEPOT):
+                return False
             return cy_distance_to_squared(loc, ai.enemy_start_locations[0]) < cy_distance_to_squared(loc, ai.start_location)
 
         proxy_locations = [Point2((loc[0], loc[1])) for loc in proxy_locations]

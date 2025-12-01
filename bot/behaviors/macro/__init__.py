@@ -6,10 +6,11 @@ from bot.behaviors.macro.DropMule import DropMule
 from bot.behaviors.macro.ProxyBuilder import ProxyBuilder
 from bot.behaviors.macro.RebuildAddons import ReBuildAddons
 from bot.behaviors.macro.RampBuilder import RampBuilder
+from bot.behaviors.macro.RampWall import RampWall
 from bot.behaviors.macro.RebuildDestroyStructure import RebuildDestroyStructure
 from bot.behaviors.macro.RepairControler import RepairController
 from bot.behaviors.macro.TrainWorker import TrainWorker
-from bot.behaviors.macro.UpgradeTech import UpgradeTech
+from bot.behaviors.macro.TechUpgrade import TechUpgrade
 
 __all__ = [
     "ArmyComposition",
@@ -20,8 +21,9 @@ __all__ = [
     "ProxyBuilder",
     "ReBuildAddons",
     "RampBuilder",
+    "RampWall",
     "RebuildDestroyStructure",
     "RepairController",
     "TrainWorker",
-    "UpgradeTech",
+    "TechUpgrade",
 ]

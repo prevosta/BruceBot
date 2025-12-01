@@ -29,14 +29,14 @@ from bot.behaviors.macro import (
     RebuildDestroyStructure,
     RepairController,
     TrainWorker,
-    UpgradeTech,
+    TechUpgrade,
 )
 from bot.utils import add_placements, remove_illegal_positions
 
 
 class BruceBot(AresBot):
     NAME: str = "BruceBot"
-    VERSION: str = "2.2.6"
+    VERSION: str = "2.2.7"
     CODE_NAME: str = "Fearless"
 
     def __init__(self, game_step_override: Optional[int] = None):
@@ -73,19 +73,13 @@ class BruceBot(AresBot):
             await self.client.chat_send(f"{self.NAME} v{self.VERSION} {self.CODE_NAME}", False)
             await self.client.chat_send("Calling in the fleet! Good luck, have fun!", False)
 
-            await self.client.debug_create_unit([[UnitTypeId.BATTLECRUISER, 3, self.proxy_placements[0], 1]])
-            await self.client.debug_create_unit([[UnitTypeId.REAPER, 1, self.start_location, 1]])
-            await self.client.debug_create_unit([[UnitTypeId.NEXUS, 1, self.mediator.get_enemy_nat, 2]])
-            await self.client.debug_create_unit([[UnitTypeId.NEXUS, 1, self.mediator.get_enemy_third, 2]])
-            await self.client.debug_create_unit([[UnitTypeId.NEXUS, 1, self.mediator.get_enemy_fourth, 2]])
-
         # Behaviors
         Mining(workers_per_gas=0 if self.cheese_in_progress else 3).execute(self, self.config, self.mediator)
         DropMule().execute(self, self.config, self.mediator)
         ControlSupplyDepot().execute(self, self.config, self.mediator)
-        ProxyBuilder(self.proxy_placements).execute(self, self.config, self.mediator)
+        ProxyBuilder().execute(self, self.config, self.mediator)
         RampBuilder().execute(self, self.config, self.mediator)
-        UpgradeTech(self.ready_to_upgrade).execute(self, self.config, self.mediator)
+        TechUpgrade(self.ready_to_upgrade).execute(self, self.config, self.mediator)
         self.repair_controller.execute(self, self.config, self.mediator)
         self.rebuildDestroyStructure.execute(self, self.config, self.mediator)
         ReBuildAddons().execute(self, self.config, self.mediator)

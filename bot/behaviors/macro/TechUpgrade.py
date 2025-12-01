@@ -10,8 +10,11 @@ from sc2.ids.unit_typeid import UnitTypeId
 from sc2.ids.upgrade_id import UpgradeId
 
 TECHUPGRADES = "TechUpgrades"
+AUTO_TECH_AT_TIME = "AutoTechAtTime"
+AUTO_TECH_AT_SUPPLY = "AutoTechAtSupply"
+
 @dataclass
-class UpgradeTech(CombatGroupBehavior):
+class TechUpgrade(CombatGroupBehavior):
     """Handles upgrading techs based on config."""
 
     cond: Callable = lambda: True  # noqa
@@ -20,11 +23,19 @@ class UpgradeTech(CombatGroupBehavior):
         if not self.cond():
             return False
 
-        upgrades = config[BUILDS][ai.build_order_runner.chosen_opening].get(TECHUPGRADES)
+        upgrades = config.get(BUILDS, {}).get(ai.build_order_runner.chosen_opening, {}).get(TECHUPGRADES)
+        auto_tech_at_time = config.get(BUILDS, {}).get(ai.build_order_runner.chosen_opening, {}).get(AUTO_TECH_AT_TIME, None)
+        auto_tech_at_supply = config.get(BUILDS, {}).get(ai.build_order_runner.chosen_opening, {}).get(AUTO_TECH_AT_SUPPLY, None)
 
         if not upgrades:
             return False
         
+        if auto_tech_at_time and ai.time < auto_tech_at_time:
+            return False
+        
+        if auto_tech_at_supply and ai.supply_army < auto_tech_at_supply:
+            return False
+
         UPGRADE_STRUCT = {
             "CONCUSSIVESHELLS": (UnitTypeId.BARRACKSTECHLAB, UpgradeId.PUNISHERGRENADES, AbilityId.RESEARCH_CONCUSSIVESHELLS),
             "STIMPACK": (UnitTypeId.BARRACKSTECHLAB, UpgradeId.STIMPACK, AbilityId.BARRACKSTECHLABRESEARCH_STIMPACK),
@@ -38,6 +49,7 @@ class UpgradeTech(CombatGroupBehavior):
             "SHIPARMORS1": (UnitTypeId.ARMORY, UpgradeId.TERRANSHIPARMORSLEVEL1, AbilityId.ARMORYRESEARCH_TERRANVEHICLEANDSHIPPLATINGLEVEL1),
             "SHIPWEAPONS2": (UnitTypeId.ARMORY, UpgradeId.TERRANSHIPWEAPONSLEVEL2, AbilityId.ARMORYRESEARCH_TERRANSHIPWEAPONSLEVEL2),
             "SHIPARMORS2": (UnitTypeId.ARMORY, UpgradeId.TERRANSHIPARMORSLEVEL2, AbilityId.ARMORYRESEARCH_TERRANVEHICLEANDSHIPPLATINGLEVEL2),
+            "PUNISHERGRENADES": (UnitTypeId.BARRACKSTECHLAB, UpgradeId.PUNISHERGRENADES, AbilityId.RESEARCH_CONCUSSIVESHELLS),
         }
 
         for upgrade_name in upgrades:
